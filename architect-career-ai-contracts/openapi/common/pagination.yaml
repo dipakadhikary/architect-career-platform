@@ -1,0 +1,93 @@
+openapi: 3.1.0
+info:
+  title: ACOS AI Pagination Schemas
+  version: 1.0.0
+
+components:
+  schemas:
+    PageRequest:
+      type: object
+      additionalProperties: false
+      description: Zero-based page request parameters.
+      properties:
+        page:
+          type: integer
+          minimum: 0
+          default: 0
+          example: 0
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+          example: 20
+        sort:
+          type: array
+          items:
+            type: string
+          description: Sort expressions, e.g. createdAt,desc
+          example: [createdAt,desc]
+
+    PageResponse:
+      type: object
+      additionalProperties: false
+      description: Zero-based page response metadata.
+      required: [page, size, totalElements, totalPages]
+      properties:
+        page:
+          type: integer
+          minimum: 0
+          example: 0
+        size:
+          type: integer
+          minimum: 1
+          example: 20
+        totalElements:
+          type: integer
+          minimum: 0
+          format: int64
+          example: 42
+        totalPages:
+          type: integer
+          minimum: 0
+          example: 3
+        first:
+          type: boolean
+          example: true
+        last:
+          type: boolean
+          example: false
+
+    Pagination:
+      description: Alias for PageResponse for documentation clarity.
+      allOf:
+        - $ref: '#/components/schemas/PageResponse'
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: Zero-based page index.
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    Size:
+      name: size
+      in: query
+      description: Page size.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    Sort:
+      name: sort
+      in: query
+      description: Sort expression(s).
+      schema:
+        type: array
+        items:
+          type: string
+      style: form
+      explode: true

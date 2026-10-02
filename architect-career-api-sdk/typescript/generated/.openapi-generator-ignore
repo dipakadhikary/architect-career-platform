@@ -1,0 +1,6 @@
+README.md
+git_push.sh
+.gitignore
+.npmignore
+package.json
+tsconfig.json

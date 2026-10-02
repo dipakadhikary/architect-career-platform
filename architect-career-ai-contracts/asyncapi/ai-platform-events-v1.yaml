@@ -1,0 +1,71 @@
+asyncapi: 3.0.0
+info:
+  title: ACOS AI Platform Events
+  version: 1.0.0
+  description: |
+    Aggregated asynchronous event contracts for the ACOS AI Platform.
+    Transport-agnostic. Kafka/Pulsar/HTTP bindings are implementation concerns outside this repository.
+  contact:
+    name: ACOS Platform Engineering
+    email: platform@acos.local
+
+defaultContentType: application/json
+
+channels:
+  aiProcessingStarted:
+    address: acos.ai.processing.started.v1
+    messages:
+      AIProcessingStarted:
+        $ref: './common/common-events.yaml#/components/messages/AIProcessingStarted'
+  aiProcessingCompleted:
+    address: acos.ai.processing.completed.v1
+    messages:
+      AIProcessingCompleted:
+        $ref: './common/common-events.yaml#/components/messages/AIProcessingCompleted'
+  aiProcessingFailed:
+    address: acos.ai.processing.failed.v1
+    messages:
+      AIProcessingFailed:
+        $ref: './common/common-events.yaml#/components/messages/AIProcessingFailed'
+
+  knowledgeCreated:
+    $ref: './knowledge/knowledge-events.yaml#/channels/knowledgeCreated'
+  knowledgeUpdated:
+    $ref: './knowledge/knowledge-events.yaml#/channels/knowledgeUpdated'
+  knowledgeIndexed:
+    $ref: './knowledge/knowledge-events.yaml#/channels/knowledgeIndexed'
+  knowledgeIndexFailed:
+    $ref: './knowledge/knowledge-events.yaml#/channels/knowledgeIndexFailed'
+
+  learningPlanCompleted:
+    $ref: './learning/learning-events.yaml#/channels/learningPlanCompleted'
+  quizGenerated:
+    $ref: './learning/learning-events.yaml#/channels/quizGenerated'
+
+  interviewCompleted:
+    $ref: './career/career-events.yaml#/channels/interviewCompleted'
+  interviewAnalyzed:
+    $ref: './career/career-events.yaml#/channels/interviewAnalyzed'
+  resumeGenerated:
+    $ref: './career/career-events.yaml#/channels/resumeGenerated'
+
+  portfolioUpdated:
+    $ref: './portfolio/portfolio-events.yaml#/channels/portfolioUpdated'
+  portfolioReviewed:
+    $ref: './portfolio/portfolio-events.yaml#/channels/portfolioReviewed'
+  skillGapDetected:
+    $ref: './portfolio/portfolio-events.yaml#/channels/skillGapDetected'
+
+operations:
+  publishAIProcessingStarted:
+    action: send
+    channel:
+      $ref: '#/channels/aiProcessingStarted'
+  publishAIProcessingCompleted:
+    action: send
+    channel:
+      $ref: '#/channels/aiProcessingCompleted'
+  publishAIProcessingFailed:
+    action: send
+    channel:
+      $ref: '#/channels/aiProcessingFailed'

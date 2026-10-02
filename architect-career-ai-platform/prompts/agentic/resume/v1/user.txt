@@ -1,0 +1,5 @@
+Role: ${target_role}
+Highlights: ${highlights}
+Skills: ${skills}
+
+${few_shot}

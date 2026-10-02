@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+typescript/node_modules/
+.npm/
+.pnpm-store/
+
+# Build outputs
+typescript/dist/
+typescript/*.tsbuildinfo
+java/**/target/
+java/generated-feign/
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE / OS
+.idea/
+*.iml
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs / temp
+*.log
+.tmp/
+.temp/
+openapi/.download-cache/
+
+# Generator CLI
+.openapi-generator-cli/
+
+# Local env
+.env
+.env.local
+*.local
+
+# Test / coverage
+coverage/
+.nyc_output/
+test-results/

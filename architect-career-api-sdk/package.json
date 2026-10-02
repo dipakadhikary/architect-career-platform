@@ -1,0 +1,32 @@
+{
+  "name": "architect-career-api-sdk",
+  "version": "0.0.1",
+  "private": true,
+  "description": "ACOS API SDK monorepo — OpenAPI-driven TypeScript and Java clients",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "openapi:download": "node scripts/download-openapi.mjs",
+    "openapi:normalize": "node scripts/normalize-openapi.mjs",
+    "version:sync": "node scripts/sync-version.mjs",
+    "generate:typescript": "node scripts/generate-typescript.mjs",
+    "generate:java": "node scripts/generate-java.mjs",
+    "generate": "npm run version:sync && npm run generate:typescript && npm run generate:java",
+    "generate:all": "npm run openapi:download && npm run openapi:normalize && npm run generate",
+    "build:typescript": "npm run build --prefix typescript",
+    "test:typescript": "npm run test --prefix typescript",
+    "build:java": "mvn -f java/pom.xml -q -DskipTests package",
+    "test:java": "mvn -f java/pom.xml -q test",
+    "format": "prettier --write \"scripts/**/*.mjs\" \"typescript/custom/**/*.{ts,json}\" \"docs/**/*.md\" \"README.md\" \"package.json\" \"typescript/package.json\"",
+    "format:check": "prettier --check \"scripts/**/*.mjs\" \"typescript/custom/**/*.{ts,json}\" \"docs/**/*.md\" \"README.md\" \"package.json\" \"typescript/package.json\"",
+    "lint:typescript": "npm run lint --prefix typescript",
+    "verify": "npm run format:check && npm run generate && npm run build:typescript && npm run test:typescript && npm run build:java && npm run test:java"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "2.15.3",
+    "js-yaml": "4.1.0",
+    "prettier": "3.5.3"
+  }
+}

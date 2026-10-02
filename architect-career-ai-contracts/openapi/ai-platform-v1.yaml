@@ -1,0 +1,97 @@
+openapi: 3.1.0
+info:
+  title: ACOS AI Platform API
+  description: |
+    Aggregated synchronous REST contracts for the ACOS AI Platform.
+    Domain modules are authored separately and composed here as the v1 surface.
+  version: 1.0.0
+  contact:
+    name: ACOS Platform Engineering
+    email: platform@acos.local
+  license:
+    name: Proprietary
+    url: https://acos.local/licenses/proprietary
+
+servers:
+  - url: http://localhost:8090
+    description: Local AI Platform
+  - url: https://ai.acos.local
+    description: Production AI Platform
+
+tags:
+  - name: Health
+  - name: Knowledge AI
+  - name: Learning AI
+  - name: Career AI
+  - name: Portfolio AI
+  - name: Chat AI
+
+security:
+  - bearerJwt: []
+
+paths:
+  /api/v1/ai/health:
+    $ref: './knowledge/knowledge-api.yaml#/paths/~1api~1v1~1ai~1health'
+  /api/v1/ai/knowledge/index:
+    $ref: './knowledge/knowledge-api.yaml#/paths/~1api~1v1~1ai~1knowledge~1index'
+  /api/v1/ai/knowledge/search:
+    $ref: './knowledge/knowledge-api.yaml#/paths/~1api~1v1~1ai~1knowledge~1search'
+  /api/v1/ai/knowledge/summarize:
+    $ref: './knowledge/knowledge-api.yaml#/paths/~1api~1v1~1ai~1knowledge~1summarize'
+  /api/v1/ai/learning/quiz/generate:
+    $ref: './learning/learning-api.yaml#/paths/~1api~1v1~1ai~1learning~1quiz~1generate'
+  /api/v1/ai/learning/topics/recommend-next:
+    $ref: './learning/learning-api.yaml#/paths/~1api~1v1~1ai~1learning~1topics~1recommend-next'
+  /api/v1/ai/learning/progress/evaluate:
+    $ref: './learning/learning-api.yaml#/paths/~1api~1v1~1ai~1learning~1progress~1evaluate'
+  /api/v1/ai/career/resume/generate:
+    $ref: './career/career-api.yaml#/paths/~1api~1v1~1ai~1career~1resume~1generate'
+  /api/v1/ai/career/interview/analyze:
+    $ref: './career/career-api.yaml#/paths/~1api~1v1~1ai~1career~1interview~1analyze'
+  /api/v1/ai/career/cover-letter/generate:
+    $ref: './career/career-api.yaml#/paths/~1api~1v1~1ai~1career~1cover-letter~1generate'
+  /api/v1/ai/portfolio/review:
+    $ref: './portfolio/portfolio-api.yaml#/paths/~1api~1v1~1ai~1portfolio~1review'
+  /api/v1/ai/portfolio/skill-gap/analyze:
+    $ref: './portfolio/portfolio-api.yaml#/paths/~1api~1v1~1ai~1portfolio~1skill-gap~1analyze'
+  /api/v1/ai/chat/completions:
+    $ref: './chat/chat-api.yaml#/paths/~1api~1v1~1ai~1chat~1completions'
+
+components:
+  securitySchemes:
+    bearerJwt:
+      $ref: './common/security.yaml#/components/securitySchemes/bearerJwt'
+    serviceApiKey:
+      $ref: './common/security.yaml#/components/securitySchemes/serviceApiKey'
+
+  schemas:
+    CorrelationId:
+      $ref: './common/common.yaml#/components/schemas/CorrelationId'
+    RequestId:
+      $ref: './common/common.yaml#/components/schemas/RequestId'
+    UserId:
+      $ref: './common/common.yaml#/components/schemas/UserId'
+    SchemaVersion:
+      $ref: './common/common.yaml#/components/schemas/SchemaVersion'
+    Metadata:
+      $ref: './common/common.yaml#/components/schemas/Metadata'
+    ApiResponse:
+      $ref: './common/common.yaml#/components/schemas/ApiResponse'
+    AIError:
+      $ref: './common/common.yaml#/components/schemas/AIError'
+    AIErrorCode:
+      $ref: './common/common.yaml#/components/schemas/AIErrorCode'
+    ProblemDetails:
+      $ref: './common/common.yaml#/components/schemas/ProblemDetails'
+    ValidationError:
+      $ref: './common/common.yaml#/components/schemas/ValidationError'
+    PageRequest:
+      $ref: './common/pagination.yaml#/components/schemas/PageRequest'
+    PageResponse:
+      $ref: './common/pagination.yaml#/components/schemas/PageResponse'
+    Pagination:
+      $ref: './common/pagination.yaml#/components/schemas/Pagination'
+    HealthResponse:
+      $ref: './common/health.yaml#/components/schemas/HealthResponse'
+    HealthStatus:
+      $ref: './common/health.yaml#/components/schemas/HealthStatus'

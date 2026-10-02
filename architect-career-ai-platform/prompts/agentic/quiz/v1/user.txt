@@ -1,0 +1,5 @@
+Topic: ${topic}
+Difficulty: ${difficulty}
+Count: ${count}
+
+${few_shot}

@@ -1,0 +1,299 @@
+openapi: 3.1.0
+info:
+  title: ACOS Learning AI API
+  description: Synchronous Learning AI contracts for quiz generation, topic recommendation, and progress evaluation.
+  version: 1.0.0
+  contact:
+    name: ACOS Platform Engineering
+    email: platform@acos.local
+
+servers:
+  - url: http://localhost:8090
+    description: Local AI Platform
+  - url: https://ai.acos.local
+    description: Production AI Platform
+
+tags:
+  - name: Learning AI
+    description: Learning quiz, recommendation, and progress evaluation
+
+security:
+  - bearerJwt: []
+
+paths:
+  /api/v1/ai/learning/quiz/generate:
+    post:
+      operationId: generateQuiz
+      tags: [Learning AI]
+      summary: Generate learning quiz
+      description: Generates a multiple-choice quiz for a learning topic.
+      parameters:
+        - $ref: '../common/security.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/SchemaVersionHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizRequest'
+            example:
+              userId: 11111111-1111-1111-1111-111111111111
+              topic: Spring Boot Testing
+              difficulty: INTERMEDIATE
+              questionCount: 5
+      responses:
+        '200':
+          description: Generated quiz
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizResponse'
+              example:
+                quizId: 44444444-4444-4444-4444-444444444444
+                topic: Spring Boot Testing
+                questions:
+                  - prompt: Which annotation starts a Spring Boot test?
+                    choices: ['@SpringBootTest', '@EnableAutoConfiguration', '@Component']
+                    correctAnswer: '@SpringBootTest'
+                    explanation: '@SpringBootTest boots the application context for integration tests.'
+        '400':
+          $ref: '../common/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/errors.yaml#/components/responses/Unauthorized'
+        '429':
+          $ref: '../common/errors.yaml#/components/responses/TooManyRequests'
+        '500':
+          $ref: '../common/errors.yaml#/components/responses/InternalServerError'
+        '503':
+          $ref: '../common/errors.yaml#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '../common/errors.yaml#/components/responses/GatewayTimeout'
+
+  /api/v1/ai/learning/topics/recommend-next:
+    post:
+      operationId: recommendNextTopic
+      tags: [Learning AI]
+      summary: Recommend next learning topic
+      description: Recommends the next topic based on completed work and goals.
+      parameters:
+        - $ref: '../common/security.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecommendNextTopicRequest'
+            example:
+              userId: 11111111-1111-1111-1111-111111111111
+              planId: 55555555-5555-5555-5555-555555555555
+              completedTopics: [REST basics, Spring MVC]
+              goals: [Become a backend architect]
+      responses:
+        '200':
+          description: Next topic recommendation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendNextTopicResponse'
+              example:
+                topic: Spring Security JWT
+                rationale: Builds on Spring MVC and aligns with backend architect goals.
+                relatedTopics: [OAuth2, Session management]
+        '400':
+          $ref: '../common/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/errors.yaml#/components/responses/Unauthorized'
+        '429':
+          $ref: '../common/errors.yaml#/components/responses/TooManyRequests'
+        '500':
+          $ref: '../common/errors.yaml#/components/responses/InternalServerError'
+        '503':
+          $ref: '../common/errors.yaml#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '../common/errors.yaml#/components/responses/GatewayTimeout'
+
+  /api/v1/ai/learning/progress/evaluate:
+    post:
+      operationId: evaluateProgress
+      tags: [Learning AI]
+      summary: Evaluate learning progress
+      description: Evaluates learning progress from completed topics and quiz scores.
+      parameters:
+        - $ref: '../common/security.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluateProgressRequest'
+            example:
+              userId: 11111111-1111-1111-1111-111111111111
+              planId: 55555555-5555-5555-5555-555555555555
+              completedTopics: [REST basics, Spring MVC]
+              quizScores: [80, 92]
+      responses:
+        '200':
+          description: Progress evaluation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluateProgressResponse'
+              example:
+                progressPercent: 68.5
+                summary: Steady progress with strong quiz performance.
+                strengths: [Spring MVC fundamentals]
+                focusAreas: [Security, Observability]
+        '400':
+          $ref: '../common/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/errors.yaml#/components/responses/Unauthorized'
+        '429':
+          $ref: '../common/errors.yaml#/components/responses/TooManyRequests'
+        '500':
+          $ref: '../common/errors.yaml#/components/responses/InternalServerError'
+        '503':
+          $ref: '../common/errors.yaml#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '../common/errors.yaml#/components/responses/GatewayTimeout'
+
+components:
+  securitySchemes:
+    bearerJwt:
+      $ref: '../common/security.yaml#/components/securitySchemes/bearerJwt'
+
+  schemas:
+    Difficulty:
+      type: string
+      enum: [BEGINNER, INTERMEDIATE, ADVANCED]
+      example: INTERMEDIATE
+
+    QuizRequest:
+      type: object
+      additionalProperties: false
+      required: [userId, topic]
+      properties:
+        userId:
+          $ref: '../common/common.yaml#/components/schemas/UserId'
+        topic:
+          type: string
+          minLength: 1
+          maxLength: 200
+        difficulty:
+          $ref: '#/components/schemas/Difficulty'
+        questionCount:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 5
+
+    QuizQuestion:
+      type: object
+      additionalProperties: false
+      required: [prompt, choices, correctAnswer]
+      properties:
+        prompt:
+          type: string
+        choices:
+          type: array
+          items:
+            type: string
+          minItems: 2
+          maxItems: 8
+        correctAnswer:
+          type: string
+        explanation:
+          type: string
+
+    QuizResponse:
+      type: object
+      additionalProperties: false
+      required: [quizId, topic, questions]
+      properties:
+        quizId:
+          type: string
+          format: uuid
+        topic:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizQuestion'
+
+    RecommendNextTopicRequest:
+      type: object
+      additionalProperties: false
+      required: [userId]
+      properties:
+        userId:
+          $ref: '../common/common.yaml#/components/schemas/UserId'
+        planId:
+          type: string
+          format: uuid
+        completedTopics:
+          type: array
+          items:
+            type: string
+        goals:
+          type: array
+          items:
+            type: string
+
+    RecommendNextTopicResponse:
+      type: object
+      additionalProperties: false
+      required: [topic, rationale]
+      properties:
+        topic:
+          type: string
+        rationale:
+          type: string
+        relatedTopics:
+          type: array
+          items:
+            type: string
+
+    EvaluateProgressRequest:
+      type: object
+      additionalProperties: false
+      required: [userId]
+      properties:
+        userId:
+          $ref: '../common/common.yaml#/components/schemas/UserId'
+        planId:
+          type: string
+          format: uuid
+        completedTopics:
+          type: array
+          items:
+            type: string
+        quizScores:
+          type: array
+          items:
+            type: number
+            format: double
+            minimum: 0
+            maximum: 100
+
+    EvaluateProgressResponse:
+      type: object
+      additionalProperties: false
+      required: [progressPercent, summary]
+      properties:
+        progressPercent:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+        summary:
+          type: string
+        strengths:
+          type: array
+          items:
+            type: string
+        focusAreas:
+          type: array
+          items:
+            type: string

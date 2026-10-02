@@ -1,0 +1,263 @@
+openapi: 3.1.0
+info:
+  title: ACOS Career AI API
+  description: Synchronous Career AI contracts for resume generation, interview analysis, and cover letters.
+  version: 1.0.0
+  contact:
+    name: ACOS Platform Engineering
+    email: platform@acos.local
+
+servers:
+  - url: http://localhost:8090
+    description: Local AI Platform
+  - url: https://ai.acos.local
+    description: Production AI Platform
+
+tags:
+  - name: Career AI
+    description: Career document and interview analysis capabilities
+
+security:
+  - bearerJwt: []
+
+paths:
+  /api/v1/ai/career/resume/generate:
+    post:
+      operationId: generateResume
+      tags: [Career AI]
+      summary: Generate tailored resume
+      description: Generates a resume tailored to a target role.
+      parameters:
+        - $ref: '../common/security.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/SchemaVersionHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResumeRequest'
+            example:
+              userId: 11111111-1111-1111-1111-111111111111
+              targetRole: Principal Software Architect
+              experienceHighlights:
+                - Led platform modernization across 12 services
+              skills: [Java, Spring Boot, Event-Driven Architecture]
+      responses:
+        '200':
+          description: Generated resume
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumeResponse'
+              example:
+                content: '# Principal Software Architect\n\n...'
+                format: markdown
+        '400':
+          $ref: '../common/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/errors.yaml#/components/responses/Unauthorized'
+        '429':
+          $ref: '../common/errors.yaml#/components/responses/TooManyRequests'
+        '500':
+          $ref: '../common/errors.yaml#/components/responses/InternalServerError'
+        '503':
+          $ref: '../common/errors.yaml#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '../common/errors.yaml#/components/responses/GatewayTimeout'
+
+  /api/v1/ai/career/interview/analyze:
+    post:
+      operationId: analyzeInterview
+      tags: [Career AI]
+      summary: Analyze interview transcript
+      description: Analyzes an interview transcript against an optional job description.
+      parameters:
+        - $ref: '../common/security.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InterviewAnalysisRequest'
+            example:
+              userId: 11111111-1111-1111-1111-111111111111
+              interviewId: 66666666-6666-6666-6666-666666666666
+              transcript: Interviewer asked about CAP theorem...
+              jobDescription: Looking for distributed systems experience.
+      responses:
+        '200':
+          description: Interview analysis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InterviewAnalysisResponse'
+              example:
+                summary: Strong distributed systems answers with clear trade-off reasoning.
+                strengths: [System design clarity]
+                improvements: [Quantify impact with metrics]
+                score: 84.0
+        '400':
+          $ref: '../common/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/errors.yaml#/components/responses/Unauthorized'
+        '429':
+          $ref: '../common/errors.yaml#/components/responses/TooManyRequests'
+        '500':
+          $ref: '../common/errors.yaml#/components/responses/InternalServerError'
+        '503':
+          $ref: '../common/errors.yaml#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '../common/errors.yaml#/components/responses/GatewayTimeout'
+
+  /api/v1/ai/career/cover-letter/generate:
+    post:
+      operationId: generateCoverLetter
+      tags: [Career AI]
+      summary: Generate cover letter
+      description: Generates a cover letter for a target role and optional company.
+      parameters:
+        - $ref: '../common/security.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CoverLetterRequest'
+            example:
+              userId: 11111111-1111-1111-1111-111111111111
+              targetRole: Staff Engineer
+              companyName: Acme Platforms
+              highlights:
+                - Built internal developer platform used by 200 engineers
+      responses:
+        '200':
+          description: Generated cover letter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoverLetterResponse'
+              example:
+                content: Dear Hiring Manager,...
+                format: plain
+        '400':
+          $ref: '../common/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/errors.yaml#/components/responses/Unauthorized'
+        '429':
+          $ref: '../common/errors.yaml#/components/responses/TooManyRequests'
+        '500':
+          $ref: '../common/errors.yaml#/components/responses/InternalServerError'
+        '503':
+          $ref: '../common/errors.yaml#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '../common/errors.yaml#/components/responses/GatewayTimeout'
+
+components:
+  securitySchemes:
+    bearerJwt:
+      $ref: '../common/security.yaml#/components/securitySchemes/bearerJwt'
+
+  schemas:
+    DocumentFormat:
+      type: string
+      enum: [markdown, plain]
+      example: markdown
+
+    ResumeRequest:
+      type: object
+      additionalProperties: false
+      required: [userId, targetRole]
+      properties:
+        userId:
+          $ref: '../common/common.yaml#/components/schemas/UserId'
+        targetRole:
+          type: string
+          minLength: 1
+          maxLength: 200
+        experienceHighlights:
+          type: array
+          items:
+            type: string
+        skills:
+          type: array
+          items:
+            type: string
+
+    ResumeResponse:
+      type: object
+      additionalProperties: false
+      required: [content, format]
+      properties:
+        content:
+          type: string
+        format:
+          $ref: '#/components/schemas/DocumentFormat'
+
+    InterviewAnalysisRequest:
+      type: object
+      additionalProperties: false
+      required: [userId, transcript]
+      properties:
+        userId:
+          $ref: '../common/common.yaml#/components/schemas/UserId'
+        interviewId:
+          type: string
+          format: uuid
+        transcript:
+          type: string
+          minLength: 1
+        jobDescription:
+          type: string
+
+    InterviewAnalysisResponse:
+      type: object
+      additionalProperties: false
+      required: [summary]
+      properties:
+        summary:
+          type: string
+        strengths:
+          type: array
+          items:
+            type: string
+        improvements:
+          type: array
+          items:
+            type: string
+        score:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+
+    CoverLetterRequest:
+      type: object
+      additionalProperties: false
+      required: [userId, targetRole]
+      properties:
+        userId:
+          $ref: '../common/common.yaml#/components/schemas/UserId'
+        targetRole:
+          type: string
+          minLength: 1
+          maxLength: 200
+        companyName:
+          type: string
+          maxLength: 200
+        highlights:
+          type: array
+          items:
+            type: string
+
+    CoverLetterResponse:
+      type: object
+      additionalProperties: false
+      required: [content, format]
+      properties:
+        content:
+          type: string
+        format:
+          $ref: '#/components/schemas/DocumentFormat'

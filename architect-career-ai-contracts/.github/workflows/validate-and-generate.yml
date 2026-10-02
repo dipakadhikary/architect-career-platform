@@ -1,0 +1,60 @@
+name: Validate Contracts and Generate
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # Enable for GitHub Packages publish later:
+  # packages: write
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          # Uncomment when publishing to GitHub Packages:
+          # server-id: github
+          # server-username: GITHUB_ACTOR
+          # server-password: GITHUB_TOKEN
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python validation deps
+        run: pip install pydantic
+
+      - name: Validate OpenAPI / AsyncAPI, generate, compile, package
+        run: mvn -B clean verify
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: career-ai-sdk-artifacts
+          path: |
+            target/artifacts/career-ai-java-sdk.jar
+            target/artifacts/career-ai-python-sdk.zip
+            target/artifacts/career-ai-typescript-sdk.zip
+          if-no-files-found: error
+
+      # Enable when ready to publish to GitHub Packages:
+      # - name: Publish Java SDK to GitHub Packages
+      #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      #   run: mvn -B deploy -DskipTests
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

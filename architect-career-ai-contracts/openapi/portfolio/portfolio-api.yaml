@@ -1,0 +1,193 @@
+openapi: 3.1.0
+info:
+  title: ACOS Portfolio AI API
+  description: Synchronous Portfolio AI contracts for portfolio review and skill-gap analysis.
+  version: 1.0.0
+  contact:
+    name: ACOS Platform Engineering
+    email: platform@acos.local
+
+servers:
+  - url: http://localhost:8090
+    description: Local AI Platform
+  - url: https://ai.acos.local
+    description: Production AI Platform
+
+tags:
+  - name: Portfolio AI
+    description: Portfolio review and skill-gap analysis
+
+security:
+  - bearerJwt: []
+
+paths:
+  /api/v1/ai/portfolio/review:
+    post:
+      operationId: reviewPortfolio
+      tags: [Portfolio AI]
+      summary: Review portfolio
+      description: Reviews selected portfolio projects for strengths and improvement areas.
+      parameters:
+        - $ref: '../common/security.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/SchemaVersionHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PortfolioReviewRequest'
+            example:
+              userId: 11111111-1111-1111-1111-111111111111
+              projectIds:
+                - 77777777-7777-7777-7777-777777777777
+              targetRole: Staff Engineer
+      responses:
+        '200':
+          description: Portfolio review
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioReviewResponse'
+              example:
+                summary: Strong systems projects with clear ownership signals.
+                strengths: [End-to-end delivery, Observability]
+                improvements: [Add measurable outcomes]
+                score: 79.5
+        '400':
+          $ref: '../common/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/errors.yaml#/components/responses/Unauthorized'
+        '429':
+          $ref: '../common/errors.yaml#/components/responses/TooManyRequests'
+        '500':
+          $ref: '../common/errors.yaml#/components/responses/InternalServerError'
+        '503':
+          $ref: '../common/errors.yaml#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '../common/errors.yaml#/components/responses/GatewayTimeout'
+
+  /api/v1/ai/portfolio/skill-gap/analyze:
+    post:
+      operationId: analyzeSkillGap
+      tags: [Portfolio AI]
+      summary: Analyze skill gaps
+      description: Analyzes skill gaps relative to a target role using current skills and project technologies.
+      parameters:
+        - $ref: '../common/security.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SkillGapRequest'
+            example:
+              userId: 11111111-1111-1111-1111-111111111111
+              targetRole: Cloud Architect
+              currentSkills: [Java, Kubernetes]
+              projectTechnologies: [Spring Boot, PostgreSQL]
+      responses:
+        '200':
+          description: Skill-gap analysis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillGapResponse'
+              example:
+                summary: Strong application delivery skills; deepen multi-cloud networking.
+                missingSkills: [GCP networking, FinOps]
+                recommendedActions:
+                  - Complete a multi-region networking lab
+                  - Document cost governance patterns
+        '400':
+          $ref: '../common/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/errors.yaml#/components/responses/Unauthorized'
+        '429':
+          $ref: '../common/errors.yaml#/components/responses/TooManyRequests'
+        '500':
+          $ref: '../common/errors.yaml#/components/responses/InternalServerError'
+        '503':
+          $ref: '../common/errors.yaml#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '../common/errors.yaml#/components/responses/GatewayTimeout'
+
+components:
+  securitySchemes:
+    bearerJwt:
+      $ref: '../common/security.yaml#/components/securitySchemes/bearerJwt'
+
+  schemas:
+    PortfolioReviewRequest:
+      type: object
+      additionalProperties: false
+      required: [userId]
+      properties:
+        userId:
+          $ref: '../common/common.yaml#/components/schemas/UserId'
+        projectIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        targetRole:
+          type: string
+          maxLength: 200
+
+    PortfolioReviewResponse:
+      type: object
+      additionalProperties: false
+      required: [summary]
+      properties:
+        summary:
+          type: string
+        strengths:
+          type: array
+          items:
+            type: string
+        improvements:
+          type: array
+          items:
+            type: string
+        score:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+
+    SkillGapRequest:
+      type: object
+      additionalProperties: false
+      required: [userId, targetRole]
+      properties:
+        userId:
+          $ref: '../common/common.yaml#/components/schemas/UserId'
+        targetRole:
+          type: string
+          minLength: 1
+          maxLength: 200
+        currentSkills:
+          type: array
+          items:
+            type: string
+        projectTechnologies:
+          type: array
+          items:
+            type: string
+
+    SkillGapResponse:
+      type: object
+      additionalProperties: false
+      required: [summary]
+      properties:
+        summary:
+          type: string
+        missingSkills:
+          type: array
+          items:
+            type: string
+        recommendedActions:
+          type: array
+          items:
+            type: string

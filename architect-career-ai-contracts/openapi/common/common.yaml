@@ -1,0 +1,166 @@
+openapi: 3.1.0
+info:
+  title: ACOS AI Common Schemas
+  description: Reusable schemas shared across all ACOS AI Platform REST contracts.
+  version: 1.0.0
+  contact:
+    name: ACOS Platform Engineering
+    email: platform@acos.local
+  license:
+    name: Proprietary
+    url: https://acos.local/licenses/proprietary
+
+components:
+  schemas:
+    CorrelationId:
+      type: string
+      format: uuid
+      description: Correlation identifier propagated across services and events.
+      example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+
+    RequestId:
+      type: string
+      format: uuid
+      description: Unique identifier for a single HTTP request.
+      example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+
+    UserId:
+      type: string
+      format: uuid
+      description: Authenticated platform user identifier.
+      example: 11111111-1111-1111-1111-111111111111
+
+    SchemaVersion:
+      type: string
+      description: Semantic version of the payload schema.
+      pattern: '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-.]+)?(?:\+[0-9A-Za-z-.]+)?$'
+      example: 1.0.0
+
+    Metadata:
+      type: object
+      additionalProperties: false
+      description: Optional opaque metadata for observability and extension.
+      properties:
+        correlationId:
+          $ref: '#/components/schemas/CorrelationId'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+        schemaVersion:
+          $ref: '#/components/schemas/SchemaVersion'
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Free-form string tags for tracing and routing.
+
+    ApiResponse:
+      type: object
+      additionalProperties: false
+      description: Standard success envelope used by AI Platform HTTP responses when wrapping payloads.
+      required: [success, timestamp]
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          description: Domain payload.
+        error:
+          oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/AIError'
+        timestamp:
+          type: string
+          format: date-time
+          example: 2026-08-07T08:00:00Z
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+
+    AIError:
+      type: object
+      additionalProperties: false
+      description: Structured AI Platform error payload for non-Problem-Details consumers.
+      required: [code, message]
+      properties:
+        code:
+          $ref: '#/components/schemas/AIErrorCode'
+        message:
+          type: string
+          example: AI platform request timed out
+        details:
+          type: object
+          additionalProperties: true
+        retryable:
+          type: boolean
+          example: true
+
+    AIErrorCode:
+      type: string
+      description: Stable machine-readable AI error codes.
+      enum:
+        - AI_PLATFORM_UNAVAILABLE
+        - AI_PLATFORM_ERROR
+        - AI_TIMEOUT
+        - AI_AUTHENTICATION_FAILED
+        - AI_VALIDATION_FAILED
+        - AI_RATE_LIMITED
+        - AI_PROCESSING_FAILED
+        - AI_NOT_FOUND
+
+    ProblemDetails:
+      type: object
+      additionalProperties: true
+      description: |
+        RFC 9457 Problem Details for HTTP APIs.
+        Content-Type: application/problem+json
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          format: uri
+          description: A URI reference that identifies the problem type.
+          example: https://acos.local/problems/ai-validation-failed
+        title:
+          type: string
+          example: Validation Failed
+        status:
+          type: integer
+          minimum: 100
+          maximum: 599
+          example: 400
+        detail:
+          type: string
+          example: Field 'query' must not be blank
+        instance:
+          type: string
+          format: uri
+          example: /api/v1/ai/knowledge/search
+        code:
+          $ref: '#/components/schemas/AIErrorCode'
+        correlationId:
+          $ref: '#/components/schemas/CorrelationId'
+        requestId:
+          $ref: '#/components/schemas/RequestId'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+
+    ValidationError:
+      type: object
+      additionalProperties: false
+      description: Field-level validation error detail.
+      required: [field, message]
+      properties:
+        field:
+          type: string
+          example: query
+        message:
+          type: string
+          example: must not be blank
+        rejectedValue:
+          description: Rejected value when safe to echo.
+          oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+            - type: 'null'

@@ -1,0 +1,87 @@
+{
+  "$schema": "node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "7.12.0",
+    "generators": {
+      "typescript-axios": {
+        "generatorName": "typescript-axios",
+        "inputSpec": "#{cwd}/openapi/acos-api.yaml",
+        "output": "#{cwd}/typescript/generated",
+        "additionalProperties": {
+          "npmName": "@acos/api-sdk",
+          "npmVersion": "0.0.1",
+          "supportsES6": true,
+          "withSeparateModelsAndApi": true,
+          "apiPackage": "api",
+          "modelPackage": "models",
+          "enumPropertyNaming": "UPPERCASE",
+          "stringEnums": true,
+          "useSingleRequestParameter": true,
+          "withInterfaces": true,
+          "usePromise": true
+        },
+        "globalProperties": {
+          "apiDocs": false,
+          "modelDocs": false,
+          "apiTests": false,
+          "modelTests": false
+        }
+      },
+      "java-restclient": {
+        "generatorName": "java",
+        "inputSpec": "#{cwd}/openapi/acos-api.yaml",
+        "output": "#{cwd}/java/generated",
+        "library": "restclient",
+        "additionalProperties": {
+          "artifactId": "architect-career-api-sdk",
+          "groupId": "com.acos",
+          "artifactVersion": "0.0.1",
+          "apiPackage": "com.acos.sdk.generated.api",
+          "modelPackage": "com.acos.sdk.generated.model",
+          "invokerPackage": "com.acos.sdk.generated",
+          "dateLibrary": "java8",
+          "java8": true,
+          "useJakartaEe": true,
+          "openApiNullable": false,
+          "serializationLibrary": "jackson",
+          "hideGenerationTimestamp": true,
+          "disallowAdditionalPropertiesIfNotPresent": false
+        },
+        "globalProperties": {
+          "apiDocs": false,
+          "modelDocs": false,
+          "apiTests": false,
+          "modelTests": false
+        }
+      },
+      "java-feign": {
+        "generatorName": "java",
+        "inputSpec": "#{cwd}/openapi/acos-api.yaml",
+        "output": "#{cwd}/java/generated-feign",
+        "library": "feign",
+        "additionalProperties": {
+          "artifactId": "architect-career-api-sdk-feign",
+          "groupId": "com.acos",
+          "artifactVersion": "0.0.1",
+          "apiPackage": "com.acos.sdk.generated.feign.api",
+          "modelPackage": "com.acos.sdk.generated.feign.model",
+          "invokerPackage": "com.acos.sdk.generated.feign",
+          "dateLibrary": "java8",
+          "java8": true,
+          "useJakartaEe": true,
+          "openApiNullable": false,
+          "serializationLibrary": "jackson",
+          "hideGenerationTimestamp": true,
+          "disallowAdditionalPropertiesIfNotPresent": false
+        },
+        "globalProperties": {
+          "apiDocs": false,
+          "modelDocs": false,
+          "apiTests": false,
+          "modelTests": false
+        }
+      }
+    }
+  }
+}

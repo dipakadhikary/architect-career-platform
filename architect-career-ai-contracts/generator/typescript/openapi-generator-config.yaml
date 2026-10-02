@@ -1,0 +1,14 @@
+# TypeScript OpenAPI Generator configuration (Axios)
+# Used by scripts/generate-typescript.mjs
+
+npmName: '@acos/ai-contracts'
+npmVersion: 1.0.0
+supportsES6: true
+withSeparateModelsAndApi: true
+apiPackage: api
+modelPackage: models
+enumPropertyNaming: UPPERCASE
+stringEnums: true
+useSingleRequestParameter: true
+withInterfaces: true
+usePromise: true

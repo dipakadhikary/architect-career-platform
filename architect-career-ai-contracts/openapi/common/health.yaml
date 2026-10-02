@@ -1,0 +1,56 @@
+openapi: 3.1.0
+info:
+  title: ACOS AI Health Schemas
+  version: 1.0.0
+
+components:
+  schemas:
+    HealthStatus:
+      type: string
+      description: Aggregate AI Platform health status.
+      enum: [AVAILABLE, UNAVAILABLE, DEGRADED]
+      example: AVAILABLE
+
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      description: Health probe response for the AI Platform process.
+      required: [status, checkedAt, enabled]
+      properties:
+        status:
+          $ref: '#/components/schemas/HealthStatus'
+        message:
+          type: string
+          example: AI Platform is healthy
+        checkedAt:
+          type: string
+          format: date-time
+          example: 2026-08-07T08:00:00Z
+        enabled:
+          type: boolean
+          description: Whether AI capabilities are enabled in this environment.
+          example: true
+        version:
+          type: string
+          description: AI Platform service version.
+          example: 1.0.0
+        dependencies:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DependencyHealth'
+          description: Optional dependency health map (model provider, vector store, broker).
+
+    DependencyHealth:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          $ref: '#/components/schemas/HealthStatus'
+        latencyMs:
+          type: integer
+          minimum: 0
+          example: 12
+        message:
+          type: string
+          example: ok

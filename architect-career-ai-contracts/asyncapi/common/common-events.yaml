@@ -1,0 +1,273 @@
+asyncapi: 3.0.0
+info:
+  title: ACOS AI Common Events
+  version: 1.0.0
+  description: Shared envelopes, headers, and lifecycle events for ACOS AI asynchronous contracts.
+
+defaultContentType: application/json
+
+components:
+  schemas:
+    EventId:
+      type: string
+      format: uuid
+      description: Globally unique event identifier.
+      examples:
+        - 9a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d
+
+    CorrelationId:
+      type: string
+      format: uuid
+      description: Correlation identifier shared across REST and event flows.
+
+    SchemaVersion:
+      type: string
+      description: Semantic version of the event payload schema.
+      examples:
+        - 1.0.0
+
+    UserId:
+      type: string
+      format: uuid
+
+    CloudEventEnvelope:
+      type: object
+      additionalProperties: false
+      description: |
+        Base envelope for ACOS AI events. Compatible with CloudEvents naming
+        while remaining transport-agnostic (Kafka, Pulsar, HTTP webhooks, etc.).
+      required:
+        - id
+        - source
+        - type
+        - specversion
+        - time
+        - datacontenttype
+        - data
+      properties:
+        id:
+          $ref: '#/components/schemas/EventId'
+        source:
+          type: string
+          format: uri
+          description: Producer identity URI.
+          examples:
+            - urn:acos:ai-platform
+            - urn:acos:business-platform
+        type:
+          type: string
+          description: Fully-qualified event type.
+          examples:
+            - com.acos.ai.knowledge.indexed.v1
+        specversion:
+          type: string
+          const: '1.0'
+        time:
+          type: string
+          format: date-time
+        datacontenttype:
+          type: string
+          const: application/json
+        dataschema:
+          type: string
+          format: uri
+          description: Optional URI to the payload schema version.
+        subject:
+          type: string
+          description: Aggregate or resource identifier related to the event.
+        data:
+          type: object
+          additionalProperties: true
+
+    EventHeaders:
+      type: object
+      additionalProperties: false
+      description: Recommended transport headers / message attributes for all AI events.
+      required: [correlationId, eventId, schemaVersion, producedAt]
+      properties:
+        correlationId:
+          $ref: '#/components/schemas/CorrelationId'
+        eventId:
+          $ref: '#/components/schemas/EventId'
+        schemaVersion:
+          $ref: '#/components/schemas/SchemaVersion'
+        producedAt:
+          type: string
+          format: date-time
+        producer:
+          type: string
+          description: Logical producer service name.
+          examples:
+            - acos-ai-platform
+            - acos-business-platform
+        causationId:
+          type: string
+          format: uuid
+          description: Optional identifier of the causing event or request.
+        contentType:
+          type: string
+          const: application/json
+
+    RetryPolicy:
+      type: object
+      additionalProperties: false
+      description: Recommended retry semantics for consumers (contract guidance, not broker config).
+      properties:
+        maxAttempts:
+          type: integer
+          minimum: 1
+          default: 5
+          examples:
+            - 5
+        initialDelayMs:
+          type: integer
+          minimum: 0
+          default: 500
+        backoffMultiplier:
+          type: number
+          format: double
+          minimum: 1
+          default: 2.0
+        maxDelayMs:
+          type: integer
+          minimum: 0
+          default: 60000
+        retryableErrorCodes:
+          type: array
+          items:
+            type: string
+          examples:
+            - AI_TIMEOUT
+            - AI_PLATFORM_UNAVAILABLE
+            - AI_RATE_LIMITED
+
+    DeadLetterPolicy:
+      type: object
+      additionalProperties: false
+      description: Dead-letter recommendations after retries are exhausted.
+      properties:
+        enabled:
+          type: boolean
+          default: true
+        reasonHeader:
+          type: string
+          default: x-acos-dlq-reason
+        includeOriginalHeaders:
+          type: boolean
+          default: true
+        retainPayload:
+          type: boolean
+          default: true
+        alertOnWrite:
+          type: boolean
+          default: true
+
+    AIProcessingStatus:
+      type: string
+      enum: [STARTED, COMPLETED, FAILED]
+      examples:
+        - STARTED
+
+    AIProcessingStartedData:
+      type: object
+      additionalProperties: false
+      required: [operation, userId, startedAt]
+      properties:
+        operation:
+          type: string
+          examples:
+            - knowledge.index
+            - career.interview.analyze
+        userId:
+          $ref: '#/components/schemas/UserId'
+        resourceId:
+          type: string
+          format: uuid
+        startedAt:
+          type: string
+          format: date-time
+
+    AIProcessingCompletedData:
+      type: object
+      additionalProperties: false
+      required: [operation, userId, completedAt, durationMs]
+      properties:
+        operation:
+          type: string
+        userId:
+          $ref: '#/components/schemas/UserId'
+        resourceId:
+          type: string
+          format: uuid
+        completedAt:
+          type: string
+          format: date-time
+        durationMs:
+          type: integer
+          minimum: 0
+
+    AIProcessingFailedData:
+      type: object
+      additionalProperties: false
+      required: [operation, userId, failedAt, code, message, retryable]
+      properties:
+        operation:
+          type: string
+        userId:
+          $ref: '#/components/schemas/UserId'
+        resourceId:
+          type: string
+          format: uuid
+        failedAt:
+          type: string
+          format: date-time
+        code:
+          type: string
+          examples:
+            - AI_PROCESSING_FAILED
+        message:
+          type: string
+        retryable:
+          type: boolean
+
+  messages:
+    AIProcessingStarted:
+      name: AIProcessingStarted
+      title: AI processing started
+      summary: Emitted when an AI capability begins processing.
+      contentType: application/json
+      headers:
+        $ref: '#/components/schemas/EventHeaders'
+      payload:
+        $ref: '#/components/schemas/AIProcessingStartedData'
+      examples:
+        - name: knowledgeIndexStarted
+          headers:
+            correlationId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+            eventId: 9a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d
+            schemaVersion: 1.0.0
+            producedAt: 2026-08-07T08:00:00Z
+            producer: acos-ai-platform
+          payload:
+            operation: knowledge.index
+            userId: 11111111-1111-1111-1111-111111111111
+            resourceId: 22222222-2222-2222-2222-222222222222
+            startedAt: 2026-08-07T08:00:00Z
+
+    AIProcessingCompleted:
+      name: AIProcessingCompleted
+      title: AI processing completed
+      contentType: application/json
+      headers:
+        $ref: '#/components/schemas/EventHeaders'
+      payload:
+        $ref: '#/components/schemas/AIProcessingCompletedData'
+
+    AIProcessingFailed:
+      name: AIProcessingFailed
+      title: AI processing failed
+      contentType: application/json
+      headers:
+        $ref: '#/components/schemas/EventHeaders'
+      payload:
+        $ref: '#/components/schemas/AIProcessingFailedData'

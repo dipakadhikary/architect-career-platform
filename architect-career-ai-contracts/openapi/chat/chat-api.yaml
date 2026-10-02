@@ -1,0 +1,130 @@
+openapi: 3.1.0
+info:
+  title: ACOS Chat AI API
+  description: Synchronous Chat AI contracts for conversational assistance across ACOS domains.
+  version: 1.0.0
+  contact:
+    name: ACOS Platform Engineering
+    email: platform@acos.local
+
+servers:
+  - url: http://localhost:8090
+    description: Local AI Platform
+  - url: https://ai.acos.local
+    description: Production AI Platform
+
+tags:
+  - name: Chat AI
+    description: Conversational completion and session-aware chat
+
+security:
+  - bearerJwt: []
+
+paths:
+  /api/v1/ai/chat/completions:
+    post:
+      operationId: createChatCompletion
+      tags: [Chat AI]
+      summary: Create chat completion
+      description: |
+        Generates an assistant response for a user message with optional conversation history.
+        Future streaming variants may be added under a compatible path without breaking this contract.
+      parameters:
+        - $ref: '../common/security.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/SchemaVersionHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatCompletionRequest'
+            example:
+              userId: 11111111-1111-1111-1111-111111111111
+              message: How should I structure a learning plan for system design?
+              conversationId: 88888888-8888-8888-8888-888888888888
+              history:
+                - role: user
+                  content: I want to become a staff engineer.
+                - role: assistant
+                  content: Focus on distributed systems and leadership narratives.
+      responses:
+        '200':
+          description: Chat completion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatCompletionResponse'
+              example:
+                conversationId: 88888888-8888-8888-8888-888888888888
+                message: Start with fundamentals, then practice timed design interviews weekly.
+                model: acos-chat-v1
+        '400':
+          $ref: '../common/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/errors.yaml#/components/responses/Unauthorized'
+        '429':
+          $ref: '../common/errors.yaml#/components/responses/TooManyRequests'
+        '500':
+          $ref: '../common/errors.yaml#/components/responses/InternalServerError'
+        '503':
+          $ref: '../common/errors.yaml#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '../common/errors.yaml#/components/responses/GatewayTimeout'
+
+components:
+  securitySchemes:
+    bearerJwt:
+      $ref: '../common/security.yaml#/components/securitySchemes/bearerJwt'
+
+  schemas:
+    ChatRole:
+      type: string
+      enum: [user, assistant, system]
+      example: user
+
+    ChatHistoryMessage:
+      type: object
+      additionalProperties: false
+      required: [role, content]
+      properties:
+        role:
+          $ref: '#/components/schemas/ChatRole'
+        content:
+          type: string
+          minLength: 1
+
+    ChatCompletionRequest:
+      type: object
+      additionalProperties: false
+      required: [userId, message]
+      properties:
+        userId:
+          $ref: '../common/common.yaml#/components/schemas/UserId'
+        message:
+          type: string
+          minLength: 1
+          maxLength: 16000
+        conversationId:
+          type: string
+          format: uuid
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatHistoryMessage'
+          maxItems: 100
+
+    ChatCompletionResponse:
+      type: object
+      additionalProperties: false
+      required: [conversationId, message]
+      properties:
+        conversationId:
+          type: string
+          format: uuid
+        message:
+          type: string
+        model:
+          type: string
+          description: Model identifier that produced the completion.
+          example: acos-chat-v1

@@ -1,0 +1,1 @@
+source=D:\architect-career-system\architect-career-ai-contracts\target\generated\python

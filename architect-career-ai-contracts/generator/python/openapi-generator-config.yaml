@@ -1,0 +1,6 @@
+# Python OpenAPI Generator configuration (Pydantic v2)
+# Used by scripts/generate-python.mjs
+
+packageName: acos_ai_contracts
+projectName: acos-ai-contracts
+packageVersion: 1.0.0

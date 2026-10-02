@@ -1,0 +1,8 @@
+Summarize the following content in at most ${max_length} characters.
+Return a clear summary and include bullet key points when possible.
+
+Context:
+${context}
+
+Content:
+${content}

@@ -1,0 +1,83 @@
+name: Generate and Validate SDK
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      download_openapi:
+        description: Download OpenAPI from a live backend before generating
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      openapi_url:
+        description: Optional full OpenAPI URL (used when download_openapi=true)
+        required: false
+        type: string
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Install root tooling
+        run: npm ci
+
+      - name: Download OpenAPI (optional)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.download_openapi == 'true' }}
+        env:
+          ACOS_OPENAPI_URL: ${{ inputs.openapi_url }}
+          ACOS_API_BASE_URL: ${{ vars.ACOS_API_BASE_URL }}
+        run: |
+          export ACOS_API_BASE_URL="${ACOS_API_BASE_URL:-http://127.0.0.1:8080}"
+          npm run openapi:download
+          npm run openapi:normalize
+
+      - name: Sync version
+        run: npm run version:sync
+
+      - name: Generate SDKs from committed OpenAPI
+        run: npm run generate
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Install TypeScript package
+        run: npm ci
+        working-directory: typescript
+
+      - name: Build TypeScript SDK
+        run: npm run build
+        working-directory: typescript
+
+      - name: Test TypeScript SDK
+        run: npm test
+        working-directory: typescript
+
+      - name: Build and test Java SDK
+        run: mvn -f java/pom.xml -B verify
+
+      - name: Publish packages (future)
+        if: false
+        run: echo "Package publishing will be enabled when registries are configured."

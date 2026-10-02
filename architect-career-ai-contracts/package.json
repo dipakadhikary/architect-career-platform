@@ -1,0 +1,30 @@
+{
+  "name": "architect-career-ai-contracts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Contract-first OpenAPI and AsyncAPI source of truth for the ACOS AI Platform",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "lint:openapi": "node scripts/lint-openapi.mjs",
+    "lint:asyncapi": "node scripts/lint-asyncapi.mjs",
+    "bundle:openapi": "node scripts/bundle-openapi.mjs",
+    "bundle:asyncapi": "node scripts/bundle-asyncapi.mjs",
+    "generate:java": "node scripts/generate-java.mjs",
+    "generate:python": "node scripts/generate-python.mjs",
+    "generate:typescript": "node scripts/generate-typescript.mjs",
+    "generate:events": "node scripts/generate-events.mjs",
+    "generate": "npm run bundle:openapi && npm run bundle:asyncapi && npm run generate:java && npm run generate:python && npm run generate:typescript && npm run generate:events",
+    "validate:generated": "node scripts/validate-generated.mjs",
+    "format": "prettier --write \"scripts/**/*.mjs\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"package.json\" \"generator/**/*.{yaml,yml,json,md}\"",
+    "format:check": "prettier --check \"scripts/**/*.mjs\" \"docs/**/*.md\" \"README.md\" \"CHANGELOG.md\" \"package.json\" \"generator/**/*.{yaml,yml,json,md}\"",
+    "verify": "npm run lint:openapi && npm run lint:asyncapi && npm run format:check && npm run generate && npm run validate:generated"
+  },
+  "devDependencies": {
+    "@apidevtools/swagger-parser": "12.0.0",
+    "js-yaml": "4.1.0",
+    "prettier": "3.5.3"
+  }
+}

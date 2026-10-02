@@ -1,0 +1,49 @@
+name: acos-local
+
+services:
+  postgres:
+    image: postgres:17.5-alpine
+    container_name: acos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${ACOS_DB_NAME:-acos}
+      POSTGRES_USER: ${ACOS_DB_USER:-acos}
+      POSTGRES_PASSWORD: ${ACOS_DB_PASSWORD:-acos}
+    ports:
+      - "${ACOS_DB_PORT:-5432}:5432"
+    volumes:
+      - acos_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${ACOS_DB_USER:-acos} -d ${ACOS_DB_NAME:-acos}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - acos-network
+
+  pgadmin:
+    image: dpage/pgadmin4:9.4
+    container_name: acos-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${ACOS_PGADMIN_EMAIL:-admin@acos.local}
+      PGADMIN_DEFAULT_PASSWORD: ${ACOS_PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "${ACOS_PGADMIN_PORT:-5050}:80"
+    volumes:
+      - acos_pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - acos-network
+
+volumes:
+  acos_postgres_data:
+  acos_pgadmin_data:
+
+networks:
+  acos-network:
+    driver: bridge

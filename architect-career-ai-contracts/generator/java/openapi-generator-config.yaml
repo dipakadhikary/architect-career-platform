@@ -1,0 +1,18 @@
+# Java OpenAPI Generator configuration (Feign + records)
+# Used by scripts/generate-java.mjs
+
+library: feign
+useJakartaEe: true
+openApiNullable: false
+dateLibrary: java8
+serializationLibrary: jackson
+hideGenerationTimestamp: true
+legacyDiscriminatorBehavior: false
+disallowAdditionalPropertiesIfNotPresent: false
+useBeanValidation: true
+performBeanValidation: true
+artifactId: acos-ai-contracts-java
+groupId: com.acos.ai.contracts
+apiPackage: com.acos.ai.contracts.api
+modelPackage: com.acos.ai.contracts.model
+invokerPackage: com.acos.ai.contracts

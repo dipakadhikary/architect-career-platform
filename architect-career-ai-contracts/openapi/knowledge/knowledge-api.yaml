@@ -1,0 +1,317 @@
+openapi: 3.1.0
+info:
+  title: ACOS Knowledge AI API
+  description: |
+    Synchronous Knowledge AI contracts for indexing, semantic search, and summarization.
+    Consumed by the Spring Boot Business Platform Feign client and future AI agents.
+  version: 1.0.0
+  contact:
+    name: ACOS Platform Engineering
+    email: platform@acos.local
+
+servers:
+  - url: http://localhost:8090
+    description: Local AI Platform
+  - url: https://ai.acos.local
+    description: Production AI Platform
+
+tags:
+  - name: Knowledge AI
+    description: Knowledge indexing, search, and summarization
+  - name: Health
+    description: Liveness and readiness probes
+
+security:
+  - bearerJwt: []
+
+paths:
+  /api/v1/ai/health:
+    get:
+      operationId: getAiPlatformHealth
+      tags: [Health]
+      summary: AI Platform health
+      description: Returns process and dependency health for the AI Platform.
+      parameters:
+        - $ref: '../common/security.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/RequestIdHeader'
+      responses:
+        '200':
+          description: Health snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '../common/health.yaml#/components/schemas/HealthResponse'
+              example:
+                status: AVAILABLE
+                message: AI Platform is healthy
+                checkedAt: 2026-08-07T08:00:00Z
+                enabled: true
+                version: 1.0.0
+        '503':
+          $ref: '../common/errors.yaml#/components/responses/ServiceUnavailable'
+
+  /api/v1/ai/knowledge/index:
+    post:
+      operationId: indexKnowledge
+      tags: [Knowledge AI]
+      summary: Index knowledge document
+      description: Indexes a knowledge note for later semantic retrieval.
+      parameters:
+        - $ref: '../common/security.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/SchemaVersionHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KnowledgeIndexRequest'
+            example:
+              userId: 11111111-1111-1111-1111-111111111111
+              noteId: 22222222-2222-2222-2222-222222222222
+              title: Hexagonal Architecture Notes
+              content: Ports and adapters isolate domain logic from infrastructure.
+              tags: [architecture, ddd]
+      responses:
+        '200':
+          description: Indexing accepted and completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeIndexResponse'
+              example:
+                documentId: 33333333-3333-3333-3333-333333333333
+                noteId: 22222222-2222-2222-2222-222222222222
+                status: INDEXED
+                indexedAt: 2026-08-07T08:01:00Z
+        '400':
+          $ref: '../common/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/errors.yaml#/components/responses/Unauthorized'
+        '429':
+          $ref: '../common/errors.yaml#/components/responses/TooManyRequests'
+        '500':
+          $ref: '../common/errors.yaml#/components/responses/InternalServerError'
+        '503':
+          $ref: '../common/errors.yaml#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '../common/errors.yaml#/components/responses/GatewayTimeout'
+
+  /api/v1/ai/knowledge/search:
+    post:
+      operationId: searchKnowledge
+      tags: [Knowledge AI]
+      summary: Semantic knowledge search
+      description: Performs semantic search over indexed knowledge for a user.
+      parameters:
+        - $ref: '../common/security.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KnowledgeSearchRequest'
+            example:
+              userId: 11111111-1111-1111-1111-111111111111
+              query: hexagonal architecture ports
+              limit: 5
+      responses:
+        '200':
+          description: Ranked search hits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeSearchResponse'
+              example:
+                hits:
+                  - noteId: 22222222-2222-2222-2222-222222222222
+                    title: Hexagonal Architecture Notes
+                    snippet: Ports and adapters isolate domain logic...
+                    score: 0.91
+        '400':
+          $ref: '../common/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/errors.yaml#/components/responses/Unauthorized'
+        '429':
+          $ref: '../common/errors.yaml#/components/responses/TooManyRequests'
+        '500':
+          $ref: '../common/errors.yaml#/components/responses/InternalServerError'
+        '503':
+          $ref: '../common/errors.yaml#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '../common/errors.yaml#/components/responses/GatewayTimeout'
+
+  /api/v1/ai/knowledge/summarize:
+    post:
+      operationId: summarizeKnowledge
+      tags: [Knowledge AI]
+      summary: Summarize knowledge content
+      description: Produces a concise summary and key points for knowledge content.
+      parameters:
+        - $ref: '../common/security.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/security.yaml#/components/parameters/RequestIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KnowledgeSummarizeRequest'
+            example:
+              userId: 11111111-1111-1111-1111-111111111111
+              noteId: 22222222-2222-2222-2222-222222222222
+              content: Ports and adapters isolate domain logic from infrastructure concerns.
+              maxLength: 200
+      responses:
+        '200':
+          description: Summary result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeSummarizeResponse'
+              example:
+                noteId: 22222222-2222-2222-2222-222222222222
+                summary: Hexagonal architecture isolates domain logic via ports and adapters.
+                keyPoints:
+                  - Isolate domain from infrastructure
+                  - Depend on ports, not adapters
+        '400':
+          $ref: '../common/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/errors.yaml#/components/responses/Unauthorized'
+        '429':
+          $ref: '../common/errors.yaml#/components/responses/TooManyRequests'
+        '500':
+          $ref: '../common/errors.yaml#/components/responses/InternalServerError'
+        '503':
+          $ref: '../common/errors.yaml#/components/responses/ServiceUnavailable'
+        '504':
+          $ref: '../common/errors.yaml#/components/responses/GatewayTimeout'
+
+components:
+  securitySchemes:
+    bearerJwt:
+      $ref: '../common/security.yaml#/components/securitySchemes/bearerJwt'
+
+  schemas:
+    KnowledgeIndexRequest:
+      type: object
+      additionalProperties: false
+      required: [userId, noteId, title, content]
+      properties:
+        userId:
+          $ref: '../common/common.yaml#/components/schemas/UserId'
+        noteId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 500
+        content:
+          type: string
+          minLength: 1
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 64
+          maxItems: 50
+
+    KnowledgeIndexResponse:
+      type: object
+      additionalProperties: false
+      required: [documentId, noteId, status, indexedAt]
+      properties:
+        documentId:
+          type: string
+          format: uuid
+        noteId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [INDEXED, ACCEPTED, FAILED]
+          example: INDEXED
+        indexedAt:
+          type: string
+          format: date-time
+
+    KnowledgeSearchRequest:
+      type: object
+      additionalProperties: false
+      required: [userId, query]
+      properties:
+        userId:
+          $ref: '../common/common.yaml#/components/schemas/UserId'
+        query:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+
+    KnowledgeSearchHit:
+      type: object
+      additionalProperties: false
+      required: [noteId, title, snippet, score]
+      properties:
+        noteId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        snippet:
+          type: string
+        score:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+
+    KnowledgeSearchResponse:
+      type: object
+      additionalProperties: false
+      required: [hits]
+      properties:
+        hits:
+          type: array
+          items:
+            $ref: '#/components/schemas/KnowledgeSearchHit'
+
+    KnowledgeSummarizeRequest:
+      type: object
+      additionalProperties: false
+      required: [userId, content]
+      properties:
+        userId:
+          $ref: '../common/common.yaml#/components/schemas/UserId'
+        noteId:
+          type: string
+          format: uuid
+        content:
+          type: string
+          minLength: 1
+        maxLength:
+          type: integer
+          minimum: 50
+          maximum: 5000
+
+    KnowledgeSummarizeResponse:
+      type: object
+      additionalProperties: false
+      required: [summary]
+      properties:
+        noteId:
+          type: string
+          format: uuid
+        summary:
+          type: string
+        keyPoints:
+          type: array
+          items:
+            type: string
