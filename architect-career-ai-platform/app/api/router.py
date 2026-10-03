@@ -9,6 +9,7 @@ from app.api.v1 import (
     career,
     chat,
     health,
+    indexing,
     knowledge,
     learning,
     liveness,
@@ -19,6 +20,7 @@ from app.api.v1 import (
 
 api_router = APIRouter()
 api_router.include_router(assistant.router)
+api_router.include_router(indexing.router)
 api_router.include_router(health.router)
 api_router.include_router(knowledge.router)
 api_router.include_router(chat.router)

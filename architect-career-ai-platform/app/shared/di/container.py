@@ -67,6 +67,7 @@ from app.infrastructure.observability.otel import configure_otel
 from app.infrastructure.storage.filesystem_adapter import FilesystemAdapter
 from app.infrastructure.vector.qdrant_adapter import QdrantAdapter
 from app.orchestration.agentic.service import AgenticOrchestrationService
+from app.orchestration.indexing.service import IndexingService
 from app.shared.config.settings import get_settings
 from app.shared.observability.metrics import get_metrics
 from app.shared.security.authentication import AuthenticationService
@@ -95,6 +96,13 @@ class ApplicationContainer(containers.DeclarativeContainer):
     chunker_registry = providers.Singleton(build_chunker_registry)
     embedding_port = providers.Singleton(build_embedding_port, settings=config)
     vector_store = providers.Singleton(build_vector_store, settings=config, qdrant=qdrant_adapter)
+    indexing_service = providers.Singleton(
+        IndexingService,
+        settings=config,
+        embeddings=embedding_port,
+        vector_store=vector_store,
+        metrics=metrics,
+    )
     rag_cache = providers.Singleton(build_rag_cache, redis_adapter=redis_adapter)
     knowledge_retriever = providers.Singleton(
         build_knowledge_retriever,

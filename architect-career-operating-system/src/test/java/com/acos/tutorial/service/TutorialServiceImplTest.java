@@ -15,6 +15,7 @@ import com.acos.tutorial.dto.TutorialTopicRequest;
 import com.acos.tutorial.entity.TutorialConcept;
 import com.acos.tutorial.entity.TutorialQuestion;
 import com.acos.tutorial.entity.TutorialTopic;
+import com.acos.tutorial.event.TutorialIndexPublisher;
 import com.acos.tutorial.exception.TutorialCircularHierarchyException;
 import com.acos.tutorial.exception.TutorialDuplicatePathException;
 import com.acos.tutorial.exception.TutorialQuestionNotFoundException;
@@ -41,6 +42,7 @@ class TutorialServiceImplTest {
   @Mock private TutorialConceptRepository conceptRepository;
   @Mock private TutorialQuestionRepository questionRepository;
   @Mock private TutorialSearchRepository searchRepository;
+  @Mock private TutorialIndexPublisher tutorialIndexPublisher;
 
   private TutorialServiceImpl service;
   private UUID ownerId;
@@ -49,7 +51,11 @@ class TutorialServiceImplTest {
   void setUp() {
     service =
         new TutorialServiceImpl(
-            topicRepository, conceptRepository, questionRepository, searchRepository);
+            topicRepository,
+            conceptRepository,
+            questionRepository,
+            searchRepository,
+            tutorialIndexPublisher);
     ownerId = UUID.randomUUID();
   }
 

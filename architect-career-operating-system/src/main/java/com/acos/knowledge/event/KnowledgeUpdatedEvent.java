@@ -14,6 +14,7 @@ import java.util.UUID;
  * @param content note content
  * @param tags note tags
  * @param occurredAt event time
+ * @param version optimistic version captured from the note
  */
 public record KnowledgeUpdatedEvent(
     UUID noteId,
@@ -21,7 +22,8 @@ public record KnowledgeUpdatedEvent(
     String title,
     String content,
     List<String> tags,
-    Instant occurredAt) {
+    Instant occurredAt,
+    long version) {
 
   /**
    * Validates required fields.
@@ -32,6 +34,7 @@ public record KnowledgeUpdatedEvent(
    * @param content content
    * @param tags tags
    * @param occurredAt occurred at
+   * @param version version
    */
   public KnowledgeUpdatedEvent {
     Objects.requireNonNull(noteId, "noteId must not be null");

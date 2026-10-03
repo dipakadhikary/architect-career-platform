@@ -7,6 +7,7 @@ import com.acos.knowledge.entity.Category;
 import com.acos.knowledge.entity.KnowledgeNote;
 import com.acos.knowledge.entity.Tag;
 import com.acos.knowledge.event.KnowledgeCreatedEvent;
+import com.acos.knowledge.event.KnowledgeDeletedEvent;
 import com.acos.knowledge.event.KnowledgeDomainEventPublisher;
 import com.acos.knowledge.event.KnowledgeUpdatedEvent;
 import com.acos.knowledge.exception.KnowledgeNoteNotFoundException;
@@ -96,7 +97,8 @@ public class KnowledgeServiceImpl implements KnowledgeService {
             saved.getTitle(),
             saved.getContent(),
             tagNames(saved),
-            Instant.now()));
+            Instant.now(),
+            saved.getVersion()));
     return knowledgeNoteMapper.toResponse(saved);
   }
 
@@ -128,7 +130,8 @@ public class KnowledgeServiceImpl implements KnowledgeService {
             note.getTitle(),
             note.getContent(),
             tagNames(note),
-            Instant.now()));
+            Instant.now(),
+            note.getVersion()));
     return knowledgeNoteMapper.toResponse(note);
   }
 
@@ -137,6 +140,8 @@ public class KnowledgeServiceImpl implements KnowledgeService {
     Objects.requireNonNull(ownerId, "ownerId must not be null");
     Objects.requireNonNull(noteId, "noteId must not be null");
     KnowledgeNote note = requireOwnedNote(ownerId, noteId);
+    knowledgeDomainEventPublisher.publish(
+        new KnowledgeDeletedEvent(noteId, ownerId, note.getVersion()));
     knowledgeNoteRepository.delete(note);
   }
 

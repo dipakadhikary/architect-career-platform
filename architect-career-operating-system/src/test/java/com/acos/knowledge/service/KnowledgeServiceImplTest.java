@@ -14,6 +14,7 @@ import com.acos.knowledge.dto.KnowledgeNoteResponse;
 import com.acos.knowledge.entity.Category;
 import com.acos.knowledge.entity.KnowledgeNote;
 import com.acos.knowledge.entity.Tag;
+import com.acos.knowledge.event.KnowledgeDeletedEvent;
 import com.acos.knowledge.event.KnowledgeDomainEventPublisher;
 import com.acos.knowledge.exception.KnowledgeNoteNotFoundException;
 import com.acos.knowledge.mapper.KnowledgeNoteMapper;
@@ -155,6 +156,7 @@ class KnowledgeServiceImplTest {
     knowledgeService.delete(OWNER_ID, NOTE_ID);
 
     verify(knowledgeNoteRepository).delete(existing);
+    verify(knowledgeDomainEventPublisher).publish(any(KnowledgeDeletedEvent.class));
   }
 
   @Test

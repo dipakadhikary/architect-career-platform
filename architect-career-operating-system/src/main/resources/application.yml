@@ -42,6 +42,10 @@ spring:
             connectTimeout: 3000
             readTimeout: 30000
             loggerLevel: basic
+          content-index:
+            connectTimeout: 3000
+            readTimeout: 30000
+            loggerLevel: basic
           learning-ai:
             connectTimeout: 3000
             readTimeout: 30000

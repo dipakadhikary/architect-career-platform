@@ -40,4 +40,14 @@ public class KnowledgeDomainEventPublisher {
     Objects.requireNonNull(event, "event must not be null");
     afterCommitEventPublisher.publish(event);
   }
+
+  /**
+   * Publishes a knowledge deleted event after commit.
+   *
+   * @param event deleted event
+   */
+  public void publish(KnowledgeDeletedEvent event) {
+    Objects.requireNonNull(event, "event must not be null");
+    afterCommitEventPublisher.publish(event);
+  }
 }

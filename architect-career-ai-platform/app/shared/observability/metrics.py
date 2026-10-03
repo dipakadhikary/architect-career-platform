@@ -32,6 +32,48 @@ class PlatformMetrics:
             ["provider"],
             registry=self.registry,
         )
+        self.index_documents = Counter(
+            "acos_ai_index_documents_total",
+            "Indexing operations by outcome",
+            ["outcome"],
+            registry=self.registry,
+        )
+        self.index_chunks = Counter(
+            "acos_ai_index_chunks_total",
+            "Chunks written to the vector index",
+            registry=self.registry,
+        )
+        self.embedding_requests = Counter(
+            "acos_ai_embedding_requests_total",
+            "Embedding batch requests",
+            ["outcome"],
+            registry=self.registry,
+        )
+        self.embedding_failures = Counter(
+            "acos_ai_embedding_failures_total",
+            "Embedding batches rejected before indexing",
+            registry=self.registry,
+        )
+        self.vector_upserts = Counter(
+            "acos_ai_vector_upserts_total",
+            "Vectors upserted into the index",
+            registry=self.registry,
+        )
+        self.vector_deletes = Counter(
+            "acos_ai_vector_deletes_total",
+            "Vector delete operations",
+            registry=self.registry,
+        )
+        self.index_duration = Histogram(
+            "acos_ai_index_duration_seconds",
+            "Indexing latency",
+            registry=self.registry,
+        )
+        self.index_retries = Counter(
+            "acos_ai_index_retries_total",
+            "Retry attempts during indexing",
+            registry=self.registry,
+        )
         self.http_latency = Histogram(
             "acos_ai_http_request_duration_seconds",
             "HTTP request latency in seconds",

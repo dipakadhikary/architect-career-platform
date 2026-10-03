@@ -141,7 +141,15 @@ class AppSettings(BaseSettings):
         "openai", "azure_openai", "ollama", "bge_m3", "sentence_transformers", "hashing"
     ] = "hashing"
     embedding_model: str = "text-embedding-3-small"
-    embedding_dimensions: int = 64
+    embedding_dimensions: int = Field(
+        default=64,
+        validation_alias=AliasChoices("EMBEDDING_DIMENSIONS", "embedding_dimensions"),
+    )
+    embedding_batch_size: int = Field(
+        default=16,
+        ge=1,
+        validation_alias=AliasChoices("EMBEDDING_BATCH_SIZE", "embedding_batch_size"),
+    )
     azure_embedding_deployment: str = ""
     ollama_embedding_model: str = "nomic-embed-text"
     bge_m3_model: str = "BAAI/bge-m3"
@@ -153,8 +161,39 @@ class AppSettings(BaseSettings):
     chunking_strategy: Literal["recursive", "token", "sentence", "markdown", "semantic"] = (
         "recursive"
     )
-    chunk_size: int = 800
-    chunk_overlap: int = 120
+    chunk_size: int = Field(
+        default=800,
+        ge=1,
+        validation_alias=AliasChoices("CHUNK_SIZE", "chunk_size"),
+    )
+    chunk_overlap: int = Field(
+        default=120,
+        ge=0,
+        validation_alias=AliasChoices("CHUNK_OVERLAP", "chunk_overlap"),
+    )
+    index_version: int = Field(
+        default=1,
+        ge=1,
+        validation_alias=AliasChoices("INDEX_VERSION", "index_version"),
+    )
+    index_retry_attempts: int = Field(
+        default=3,
+        ge=1,
+        le=5,
+        validation_alias=AliasChoices("INDEX_RETRY_ATTEMPTS", "index_retry_attempts"),
+    )
+    index_retry_backoff_seconds: float = Field(
+        default=0.2,
+        ge=0,
+        validation_alias=AliasChoices(
+            "INDEX_RETRY_BACKOFF_SECONDS", "index_retry_backoff_seconds"
+        ),
+    )
+    index_timeout_seconds: float = Field(
+        default=30,
+        gt=0,
+        validation_alias=AliasChoices("INDEX_TIMEOUT_SECONDS", "index_timeout_seconds"),
+    )
 
     retrieval_mode: Literal["dense", "keyword", "hybrid"] = "dense"
     retrieval_score_threshold: float | None = None

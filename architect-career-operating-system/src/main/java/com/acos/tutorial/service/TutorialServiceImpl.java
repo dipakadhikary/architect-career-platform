@@ -16,6 +16,8 @@ import com.acos.tutorial.dto.TutorialTreeNodeResponse;
 import com.acos.tutorial.entity.TutorialConcept;
 import com.acos.tutorial.entity.TutorialQuestion;
 import com.acos.tutorial.entity.TutorialTopic;
+import com.acos.tutorial.event.TutorialContentEvent;
+import com.acos.tutorial.event.TutorialIndexPublisher;
 import com.acos.tutorial.exception.TutorialCircularHierarchyException;
 import com.acos.tutorial.exception.TutorialDuplicatePathException;
 import com.acos.tutorial.exception.TutorialQuestionNotFoundException;
@@ -49,16 +51,19 @@ public class TutorialServiceImpl implements TutorialService {
   private final TutorialConceptRepository conceptRepository;
   private final TutorialQuestionRepository questionRepository;
   private final TutorialSearchRepository searchRepository;
+  private final TutorialIndexPublisher tutorialIndexPublisher;
 
   public TutorialServiceImpl(
       TutorialTopicRepository topicRepository,
       TutorialConceptRepository conceptRepository,
       TutorialQuestionRepository questionRepository,
-      TutorialSearchRepository searchRepository) {
+      TutorialSearchRepository searchRepository,
+      TutorialIndexPublisher tutorialIndexPublisher) {
     this.topicRepository = topicRepository;
     this.conceptRepository = conceptRepository;
     this.questionRepository = questionRepository;
     this.searchRepository = searchRepository;
+    this.tutorialIndexPublisher = tutorialIndexPublisher;
   }
 
   @Override
@@ -133,6 +138,23 @@ public class TutorialServiceImpl implements TutorialService {
   @Override
   public void deleteTopic(UUID ownerId, UUID topicId) {
     TutorialTopic topic = requireTopic(ownerId, topicId);
+    conceptRepository
+        .findByTopicId(topicId)
+        .ifPresent(
+            concept ->
+                tutorialIndexPublisher.publish(
+                    deleted(topic, concept.getId(), "CONCEPT", concept.getVersion(), "/concept")));
+    questionRepository
+        .findByTopicIdOrderBySortOrderAsc(topicId)
+        .forEach(
+            question ->
+                tutorialIndexPublisher.publish(
+                    deleted(
+                        topic,
+                        question.getId(),
+                        "QUESTIONS_ANSWERS",
+                        question.getVersion(),
+                        "/questions")));
     topicRepository.delete(topic);
   }
 
@@ -173,6 +195,7 @@ public class TutorialServiceImpl implements TutorialService {
             .orElseGet(() -> new TutorialConcept(topic, content));
     concept.setContent(content);
     TutorialConcept saved = conceptRepository.save(concept);
+    publishConcept(topic, saved);
     return new TutorialConceptResponse(
         topic.getId(),
         topic.getTitle(),
@@ -209,7 +232,7 @@ public class TutorialServiceImpl implements TutorialService {
       sortOrder = request.sortOrder();
     }
     TutorialQuestion entity = new TutorialQuestion(topic, question, answer, sortOrder);
-    return toQuestionResponse(questionRepository.save(entity));
+    return toQuestionResponse(publishQuestion(topic, questionRepository.save(entity)));
   }
 
   @Override
@@ -227,7 +250,7 @@ public class TutorialServiceImpl implements TutorialService {
       }
       entity.setSortOrder(request.sortOrder());
     }
-    return toQuestionResponse(questionRepository.save(entity));
+    return toQuestionResponse(publishQuestion(entity.getTopic(), questionRepository.save(entity)));
   }
 
   @Override
@@ -236,6 +259,13 @@ public class TutorialServiceImpl implements TutorialService {
         questionRepository
             .findByIdAndTopic_OwnerId(questionId, ownerId)
             .orElseThrow(() -> new TutorialQuestionNotFoundException(questionId));
+    tutorialIndexPublisher.publish(
+        deleted(
+            entity.getTopic(),
+            entity.getId(),
+            "QUESTIONS_ANSWERS",
+            entity.getVersion(),
+            "/questions"));
     questionRepository.delete(entity);
   }
 
@@ -443,6 +473,67 @@ public class TutorialServiceImpl implements TutorialService {
     }
     // Keep mark tags for highlight; strip other tags from ts_headline output.
     return snippet.replaceAll("(?i)</?(?!mark\\b)[a-z][^>]*>", "");
+  }
+
+  private void publishConcept(TutorialTopic topic, TutorialConcept saved) {
+    if (saved.getId() == null) {
+      return;
+    }
+    tutorialIndexPublisher.publish(
+        new TutorialContentEvent(
+            saved.getId(),
+            topic.getOwnerId(),
+            topic.getId(),
+            "CONCEPT",
+            topic.getTitle(),
+            saved.getContent(),
+            "",
+            "",
+            topic.getSlug(),
+            topic.getPath(),
+            "/tutorials/" + topic.getPath() + "/concept",
+            saved.getVersion(),
+            false));
+  }
+
+  private TutorialQuestion publishQuestion(TutorialTopic topic, TutorialQuestion saved) {
+    if (saved.getId() == null || topic == null) {
+      return saved;
+    }
+    tutorialIndexPublisher.publish(
+        new TutorialContentEvent(
+            saved.getId(),
+            topic.getOwnerId(),
+            topic.getId(),
+            "QUESTIONS_ANSWERS",
+            topic.getTitle(),
+            "",
+            saved.getQuestion(),
+            saved.getAnswer(),
+            topic.getSlug(),
+            topic.getPath(),
+            "/tutorials/" + topic.getPath() + "/questions",
+            saved.getVersion(),
+            false));
+    return saved;
+  }
+
+  private TutorialContentEvent deleted(
+      TutorialTopic topic, UUID contentId, String contentType, long version, String suffix) {
+    return new TutorialContentEvent(
+        contentId,
+        topic.getOwnerId(),
+        topic.getId(),
+        contentType,
+        topic.getTitle(),
+        "",
+        "",
+        "",
+        topic.getSlug(),
+        topic.getPath(),
+        "/tutorials/" + topic.getPath() + suffix,
+        version,
+        true);
   }
 
   private static ValidationException validation(String field, String message) {

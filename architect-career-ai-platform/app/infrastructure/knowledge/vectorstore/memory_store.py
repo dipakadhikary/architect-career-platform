@@ -19,7 +19,12 @@ class InMemoryVectorStore(VectorStorePort):
 
     async def upsert(self, records: list[VectorRecord]) -> None:
         for record in records:
+            if self._dimensions is not None and len(record.embedding) != self._dimensions:
+                raise ValueError("vector dimension mismatch")
             self._records[record.id] = record
+
+    def values(self) -> list[VectorRecord]:
+        return list(self._records.values())
 
     async def search(self, query: VectorSearchQuery) -> list[VectorRecord]:
         scored: list[VectorRecord] = []
