@@ -197,6 +197,16 @@ export interface SkillGapResponse {
   recommendedActions: string[];
 }
 
+export interface AssistantAskRequest {
+  messages: Array<{ role: ChatRole; content: string }>;
+}
+
+export interface AssistantAskResponse {
+  answer: string;
+  model: string;
+  provider: string;
+}
+
 export interface ChatCompletionRequest {
   message: string;
   conversationId?: string;

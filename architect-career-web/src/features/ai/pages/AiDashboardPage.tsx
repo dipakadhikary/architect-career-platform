@@ -15,7 +15,7 @@ const DOMAIN_LABELS: Record<AiDomain, string> = {
   learning: 'Learning AI',
   career: 'Career AI',
   portfolio: 'Portfolio AI',
-  chat: 'AI Chat',
+  chat: 'Ask ACOS AI',
 };
 
 const DOMAIN_PATHS: Record<AiDomain, string> = {
@@ -23,7 +23,7 @@ const DOMAIN_PATHS: Record<AiDomain, string> = {
   learning: '/ai/learning',
   career: '/ai/career',
   portfolio: '/ai/portfolio',
-  chat: '/ai/chat',
+  chat: '/ai/ask',
 };
 
 export function AiDashboardPage() {

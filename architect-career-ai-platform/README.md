@@ -30,6 +30,12 @@ cp .env.example .env
 uvicorn app.main:app --reload --port 8090
 ```
 
+Phase 1 assistant (no retrieval): see [docs/phase-1-assistant.md](docs/phase-1-assistant.md).
+
+- `GET /health`
+- `GET /ready`
+- `POST /api/v1/ai/chat`
+
 Health, Knowledge, and Agentic orchestration:
 
 - `GET /api/v1/ai/health` (contract model)

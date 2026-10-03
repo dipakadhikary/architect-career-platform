@@ -4,6 +4,8 @@ import { apiClient } from '@/shared/api/axios.instance';
 import { unwrapApiResponse } from '@/shared/api/unwrap';
 import type { ApiResponse } from '@/shared/api/types';
 import type {
+  AssistantAskRequest,
+  AssistantAskResponse,
   ChatCompletionRequest,
   ChatCompletionResponse,
   CoverLetterRequest,
@@ -144,6 +146,15 @@ export const aiApi = {
   async analyzeSkillGap(payload: SkillGapRequest): Promise<SkillGapResponse> {
     const response = await apiClient.post<ApiResponse<SkillGapResponse>>(
       `${BASE}/portfolio/skill-gap/analyze`,
+      payload,
+      { timeout },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async ask(payload: AssistantAskRequest): Promise<AssistantAskResponse> {
+    const response = await apiClient.post<ApiResponse<AssistantAskResponse>>(
+      `${BASE}/chat`,
       payload,
       { timeout },
     );

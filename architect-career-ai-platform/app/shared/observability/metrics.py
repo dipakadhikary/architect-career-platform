@@ -20,6 +20,18 @@ class PlatformMetrics:
             ["method", "path", "status"],
             registry=self.registry,
         )
+        self.assistant_requests = Counter(
+            "acos_ai_assistant_requests_total",
+            "Phase 1 assistant chat requests",
+            ["provider", "outcome"],
+            registry=self.registry,
+        )
+        self.assistant_latency = Histogram(
+            "acos_ai_assistant_request_duration_seconds",
+            "Phase 1 assistant chat latency",
+            ["provider"],
+            registry=self.registry,
+        )
         self.http_latency = Histogram(
             "acos_ai_http_request_duration_seconds",
             "HTTP request latency in seconds",

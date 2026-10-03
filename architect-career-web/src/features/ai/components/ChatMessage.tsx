@@ -10,9 +10,10 @@ import { useNotification } from '@/shared/hooks/useNotification';
 
 interface ChatMessageProps {
   message: ChatMessageModel;
+  assistantLabel?: string;
 }
 
-export function ChatMessage({ message }: ChatMessageProps) {
+export function ChatMessage({ message, assistantLabel = 'Assistant' }: ChatMessageProps) {
   const { success, error } = useNotification();
   const isUser = message.role === 'user';
 
@@ -43,7 +44,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
       >
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
           <Typography variant="caption" color="text.secondary">
-            {isUser ? 'You' : 'Assistant'}
+            {isUser ? 'You' : assistantLabel}
           </Typography>
           {message.status === 'complete' && message.content ? (
             <Tooltip title="Copy message">

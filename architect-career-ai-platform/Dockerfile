@@ -17,11 +17,15 @@ COPY app ./app
 
 RUN pip install --upgrade pip \
     && pip install /tmp/acos_ai_contracts \
-    && pip install .
+    && pip install . \
+    && useradd --create-home --uid 10001 --shell /usr/sbin/nologin acos \
+    && chown -R acos:acos ${APP_HOME}
+
+USER acos
 
 EXPOSE 8090
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD curl -fsS http://127.0.0.1:8090/api/v1/system/liveness || exit 1
+  CMD curl -fsS http://127.0.0.1:8090/health || exit 1
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8090"]

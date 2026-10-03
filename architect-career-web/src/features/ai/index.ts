@@ -1,5 +1,6 @@
 export { AiShell } from '@/features/ai/layouts/AiShell';
 export {
+  AskAiPage,
   AiDashboardPage,
   AiChatPage,
   KnowledgeAiPage,
@@ -10,6 +11,7 @@ export {
 export * from '@/features/ai/components';
 export { useAiHealth, useAiAvailability, aiQueryKeys } from '@/features/ai/hooks/useAiHealth';
 export { useAiChat } from '@/features/ai/hooks/useAiChat';
+export { useAskAi } from '@/features/ai/hooks/useAskAi';
 export {
   useKnowledgeSearchMutation,
   useKnowledgeSummarizeMutation,

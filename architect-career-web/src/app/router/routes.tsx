@@ -58,6 +58,7 @@ const ApplicationDetailPage = lazyNamed(
 );
 const AiShell = lazyNamed(() => import('@/features/ai'), 'AiShell');
 const AiDashboardPage = lazyNamed(() => import('@/features/ai'), 'AiDashboardPage');
+const AskAiPage = lazyNamed(() => import('@/features/ai'), 'AskAiPage');
 const AiChatPage = lazyNamed(() => import('@/features/ai'), 'AiChatPage');
 const KnowledgeAiPage = lazyNamed(() => import('@/features/ai'), 'KnowledgeAiPage');
 const LearningAiPage = lazyNamed(() => import('@/features/ai'), 'LearningAiPage');
@@ -135,6 +136,7 @@ export const appRoutes: RouteObject[] = [
                 element: withSuspense(<AiShell />),
                 children: [
                   { index: true, element: withSuspense(<AiDashboardPage />) },
+                  { path: 'ask', element: withSuspense(<AskAiPage />) },
                   { path: 'chat', element: withSuspense(<AiChatPage />) },
                   { path: 'knowledge', element: withSuspense(<KnowledgeAiPage />) },
                   { path: 'learning', element: withSuspense(<LearningAiPage />) },

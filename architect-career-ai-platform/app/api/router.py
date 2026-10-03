@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from app.api.v1 import (
+    assistant,
     career,
     chat,
     health,
@@ -17,6 +18,7 @@ from app.api.v1 import (
 )
 
 api_router = APIRouter()
+api_router.include_router(assistant.router)
 api_router.include_router(health.router)
 api_router.include_router(knowledge.router)
 api_router.include_router(chat.router)

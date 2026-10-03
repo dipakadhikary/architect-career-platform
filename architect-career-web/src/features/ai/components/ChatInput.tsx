@@ -7,6 +7,7 @@ interface ChatInputProps {
   disabled?: boolean;
   loading?: boolean;
   placeholder?: string;
+  submitLabel?: string;
   prefill?: string;
   onSend: (message: string) => void;
 }
@@ -15,6 +16,7 @@ export function ChatInput({
   disabled = false,
   loading = false,
   placeholder = 'Ask ACOS AI…',
+  submitLabel = 'Send',
   prefill,
   onSend,
 }: ChatInputProps) {
@@ -61,7 +63,7 @@ export function ChatInput({
           onClick={submit}
           disabled={disabled || loading || !value.trim()}
         >
-          Send
+          {submitLabel}
         </Button>
       </Box>
     </Stack>
