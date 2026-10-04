@@ -168,7 +168,8 @@ class KnowledgeControllerTest {
         null,
         List.of("interview"),
         Instant.parse("2026-08-04T06:00:00Z"),
-        Instant.parse("2026-08-04T06:00:00Z"));
+        Instant.parse("2026-08-04T06:00:00Z"),
+        0L);
   }
 
   /** Permissive security for controller slice tests; JWT enforcement is covered by IT. */

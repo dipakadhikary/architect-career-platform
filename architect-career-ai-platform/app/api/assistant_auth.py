@@ -11,6 +11,7 @@ from jose import JWTError, jwt
 from app.intelligence.assistant.models import CallerContext
 from app.shared.config.settings import AppSettings
 from app.shared.exceptions import AuthenticationError
+from app.shared.security.jwt_algorithms import hmac_algorithms_for_secret
 
 
 def resolve_caller(
@@ -46,10 +47,11 @@ def _caller_from_jwt(
         raise AuthenticationError("Bearer token is missing")
     options = {"verify_aud": bool(settings.auth_jwt_audience)}
     try:
+        secret = settings.auth_jwt_secret.get_secret_value()
         claims = jwt.decode(
             token,
-            settings.auth_jwt_secret.get_secret_value(),
-            algorithms=[settings.auth_jwt_algorithm],
+            secret,
+            algorithms=hmac_algorithms_for_secret(secret, settings.auth_jwt_algorithm),
             audience=settings.auth_jwt_audience or None,
             issuer=settings.auth_jwt_issuer or None,
             options=options,

@@ -288,10 +288,10 @@ def test_memory_store_rejects_dimension_mismatch_and_replaces_same_id() -> None:
     asyncio.run(scenario())
 
 
-def test_chat_module_does_not_retrieve_the_index() -> None:
+def test_chat_module_retrieves_without_writing_the_index() -> None:
     from pathlib import Path
 
     source = Path("app/api/v1/assistant.py").read_text(encoding="utf-8")
     assert "IndexingService" not in source
-    assert "vector_store" not in source
-    assert "embed" not in source
+    assert "upsert" not in source
+    assert "delete_by_document" not in source

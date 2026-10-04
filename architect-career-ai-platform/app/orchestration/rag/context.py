@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from app.orchestration.rag.models import RetrievedChunk
+from app.orchestration.rag.models import RetrievedChunk, ordered_for_context
 from app.shared.config.settings import AppSettings
 
 
@@ -15,7 +15,7 @@ class ContextBuilder:
         seen: set[str] = set()
         used = 0
         limit = self._settings.rag_max_context_characters
-        ordered = sorted(chunks, key=lambda item: item.score, reverse=True)
+        ordered = ordered_for_context(chunks)
         for chunk in ordered:
             key = chunk.content.strip()
             if not key or key in seen or chunk.chunk_id in seen:

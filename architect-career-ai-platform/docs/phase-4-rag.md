@@ -2,7 +2,7 @@
 
 Phase 4 connects the Phase 3 knowledge index to the existing assistant. `POST /api/v1/ai/chat` stays the only chat endpoint. When `RAG_ENABLED` is false, the Phase 2 general assistant is unchanged. When it is true, the same orchestrator runs the RAG pipeline before the existing language-model provider.
 
-Hybrid search, PostgreSQL full-text merge, reciprocal rank fusion, and cross-encoder reranking are not part of this phase. Conversation history is still only the messages on the current request.
+Phase 5 adds hybrid retrieval and optional reranking on this same endpoint. See `docs/phase-5-hybrid.md`. Conversation history is still only the messages on the current request.
 
 ## Architecture
 

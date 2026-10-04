@@ -74,7 +74,10 @@ def test_health(client: TestClient) -> None:
     assert response.json() == {"status": "UP"}
 
 
-def test_ready_without_provider_credentials(client: TestClient) -> None:
+def test_ready_without_provider_credentials(client: TestClient, settings: AppSettings) -> None:
+    settings.ai_enabled = True
+    settings.llm_provider = "openai"
+    settings.openai_api_key = None
     response = client.get("/ready")
     assert response.status_code == 200
     body = response.json()

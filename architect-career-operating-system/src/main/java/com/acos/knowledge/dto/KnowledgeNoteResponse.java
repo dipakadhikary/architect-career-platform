@@ -17,6 +17,7 @@ import java.util.UUID;
  * @param tags assigned tag names
  * @param createdAt creation timestamp
  * @param updatedAt last update timestamp
+ * @param version optimistic lock version
  */
 @Schema(name = "KnowledgeNoteResponse", description = "Markdown knowledge note")
 public record KnowledgeNoteResponse(
@@ -55,7 +56,8 @@ public record KnowledgeNoteResponse(
             description = "Last update timestamp",
             example = "2026-08-04T07:00:00Z",
             requiredMode = Schema.RequiredMode.REQUIRED)
-        Instant updatedAt) {
+        Instant updatedAt,
+    @Schema(description = "Optimistic lock version", example = "3") long version) {
 
   /**
    * Creates an immutable knowledge note response.
@@ -68,6 +70,7 @@ public record KnowledgeNoteResponse(
    * @param tags tag names
    * @param createdAt creation timestamp
    * @param updatedAt update timestamp
+   * @param version optimistic lock version
    */
   public KnowledgeNoteResponse {
     Objects.requireNonNull(id, "id must not be null");

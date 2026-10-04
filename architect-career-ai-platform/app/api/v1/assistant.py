@@ -11,13 +11,16 @@ from app.intelligence.assistant.models import CallerContext, ChatRequest, ChatRe
 from app.orchestration.assistant.service import AssistantService
 from app.orchestration.rag.context import ContextBuilder
 from app.orchestration.rag.engine import RagEngine
+from app.orchestration.rag.hybrid import HybridRetriever
+from app.orchestration.rag.lexical import IndexedLexicalRetriever
 from app.orchestration.rag.prompt import RagPromptBuilder
-from app.orchestration.rag.retriever import VectorRetriever
+from app.orchestration.rag.rerank import build_rag_reranker
+from app.orchestration.rag.retriever import ChunkRetriever, VectorRetriever
 from app.shared.config.settings import AppSettings, get_settings
 from app.shared.constants.headers import HeaderNames
 from app.shared.context.request_context import get_request_context
 from app.shared.di.container import container
-from app.shared.observability.metrics import get_metrics
+from app.shared.observability.metrics import PlatformMetrics, get_metrics
 
 router = APIRouter(tags=["Assistant"])
 
@@ -38,17 +41,30 @@ def get_assistant_service(settings: AppSettings = Depends(get_settings)) -> Assi
         metrics = get_metrics()
         rag = RagEngine(
             settings=settings,
-            retriever=VectorRetriever(
-                settings=settings,
-                embeddings=container.embedding_port(),
-                vector_store=container.vector_store(),
-                metrics=metrics,
-            ),
+            retriever=_build_retriever(settings, metrics),
             context_builder=ContextBuilder(settings),
             prompt_builder=RagPromptBuilder(),
             metrics=metrics,
         )
     return AssistantService(settings=settings, provider=provider, rag=rag)
+
+
+def _build_retriever(settings: AppSettings, metrics: PlatformMetrics) -> ChunkRetriever:
+    vector = VectorRetriever(
+        settings=settings,
+        embeddings=container.embedding_port(),
+        vector_store=container.vector_store(),
+        metrics=metrics,
+    )
+    if not settings.rag_hybrid_enabled:
+        return vector
+    return HybridRetriever(
+        settings=settings,
+        lexical=IndexedLexicalRetriever(settings, container.vector_store(), metrics),
+        vector=vector,
+        reranker=build_rag_reranker(settings),
+        metrics=metrics,
+    )
 
 
 def get_caller(

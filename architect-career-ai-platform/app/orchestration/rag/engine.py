@@ -1,4 +1,4 @@
-"""Grounded answering. This engine does not merge keyword search or rerank."""
+"""Grounded answering. Hybrid retrieval is selected by configuration."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from app.intelligence.assistant.provider import LlmProvider
 from app.orchestration.rag.context import ContextBuilder
 from app.orchestration.rag.prompt import NO_CONTEXT_ANSWER, RagPromptBuilder
 from app.orchestration.rag.query import prepare_query
-from app.orchestration.rag.retriever import VectorRetriever
+from app.orchestration.rag.retriever import ChunkRetriever
 from app.orchestration.rag.sources import sources_from_chunks
 from app.shared.config.settings import AppSettings
 from app.shared.logging.setup import get_logger
@@ -25,7 +25,7 @@ class RagEngine:
         self,
         *,
         settings: AppSettings,
-        retriever: VectorRetriever,
+        retriever: ChunkRetriever,
         context_builder: ContextBuilder,
         prompt_builder: RagPromptBuilder,
         metrics: PlatformMetrics,
@@ -41,11 +41,14 @@ class RagEngine:
         request: ChatRequest,
         caller: CallerContext,
         provider: LlmProvider,
+        retrieval_query: str | None = None,
     ) -> ChatResponse:
         question = _latest_user_text(request)
-        prepared = prepare_query(
-            question, max_characters=self._settings.ai_max_message_characters
-        )
+        search_text = retrieval_query or question
+        with _tracer.start_as_current_span("ai.query_processing"):
+            prepared = prepare_query(
+                search_text, max_characters=self._settings.ai_max_message_characters
+            )
         with _tracer.start_as_current_span("ai.request") as span:
             span.set_attribute("rag.prompt_version", self._settings.rag_prompt_version)
             span.set_attribute("owner_id", caller.owner_id)
@@ -69,9 +72,10 @@ class RagEngine:
                     grounded=False,
                     sources=[],
                 )
+            prompt_question = question if retrieval_query else prepared
             messages = self._prompt_builder.build(
                 history=request.messages,
-                question=prepared,
+                question=prompt_question,
                 context=context,
             )
             started = time.perf_counter()
@@ -83,9 +87,7 @@ class RagEngine:
                     max_tokens=self._settings.ai_max_tokens,
                 )
             self._metrics.rag_llm_latency.observe(time.perf_counter() - started)
-            citations = sources_from_chunks(
-                selected, limit=self._settings.rag_max_sources
-            )
+            citations = sources_from_chunks(selected, limit=self._settings.rag_max_sources)
             self._metrics.rag_requests.labels("grounded").inc()
             self._metrics.rag_sources.observe(len(citations))
             logger.info(

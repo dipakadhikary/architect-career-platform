@@ -17,6 +17,7 @@ import com.acos.knowledge.entity.Tag;
 import com.acos.knowledge.event.KnowledgeDeletedEvent;
 import com.acos.knowledge.event.KnowledgeDomainEventPublisher;
 import com.acos.knowledge.exception.KnowledgeNoteNotFoundException;
+import com.acos.knowledge.exception.KnowledgeNoteVersionConflictException;
 import com.acos.knowledge.mapper.KnowledgeNoteMapper;
 import com.acos.knowledge.repository.CategoryRepository;
 import com.acos.knowledge.repository.KnowledgeNoteRepository;
@@ -71,7 +72,12 @@ class KnowledgeServiceImplTest {
   void shouldCreateNoteWithCategoryAndTags() {
     KnowledgeNoteRequest request =
         new KnowledgeNoteRequest(
-            " Title ", " Summary ", "# Markdown", "System Design", List.of("Interview", "CAP"));
+            " Title ",
+            " Summary ",
+            "# Markdown",
+            "System Design",
+            List.of("Interview", "CAP"),
+            null);
     Category category = new Category(OWNER_ID, "System Design", null);
     Tag interview = new Tag(OWNER_ID, "interview");
     Tag cap = new Tag(OWNER_ID, "cap");
@@ -84,7 +90,8 @@ class KnowledgeServiceImplTest {
             null,
             List.of("cap", "interview"),
             Instant.parse("2026-08-04T06:00:00Z"),
-            Instant.parse("2026-08-04T06:00:00Z"));
+            Instant.parse("2026-08-04T06:00:00Z"),
+            0L);
 
     when(knowledgeNoteValidator.normalizeCategoryName("System Design")).thenReturn("System Design");
     when(knowledgeNoteValidator.normalizeTagNames(List.of("Interview", "CAP")))
@@ -119,7 +126,7 @@ class KnowledgeServiceImplTest {
     KnowledgeNote existing = new KnowledgeNote(OWNER_ID, "Old", "Old summary", "old content");
     ReflectionTestUtils.setField(existing, "id", NOTE_ID);
     KnowledgeNoteRequest request =
-        new KnowledgeNoteRequest("New", "New summary", "new content", null, List.of());
+        new KnowledgeNoteRequest("New", "New summary", "new content", null, List.of(), null);
     KnowledgeNoteResponse expected =
         new KnowledgeNoteResponse(
             NOTE_ID,
@@ -129,7 +136,8 @@ class KnowledgeServiceImplTest {
             null,
             List.of(),
             Instant.parse("2026-08-04T06:00:00Z"),
-            Instant.parse("2026-08-04T07:00:00Z"));
+            Instant.parse("2026-08-04T07:00:00Z"),
+            1L);
 
     when(knowledgeNoteRepository.findByIdAndOwnerId(NOTE_ID, OWNER_ID))
         .thenReturn(Optional.of(existing));
@@ -145,6 +153,21 @@ class KnowledgeServiceImplTest {
     assertThat(existing.getContent()).isEqualTo("new content");
     assertThat(existing.getCategory()).isNull();
     assertThat(existing.getTags()).isEmpty();
+  }
+
+  @Test
+  void shouldRejectUpdateWhenExpectedVersionDoesNotMatch() {
+    KnowledgeNote existing = new KnowledgeNote(OWNER_ID, "Old", "Old summary", "old content");
+    ReflectionTestUtils.setField(existing, "id", NOTE_ID);
+    ReflectionTestUtils.setField(existing, "version", 11L);
+    KnowledgeNoteRequest request =
+        new KnowledgeNoteRequest("New", "New summary", "proposal", null, null, 10L);
+    when(knowledgeNoteRepository.findByIdAndOwnerId(NOTE_ID, OWNER_ID))
+        .thenReturn(Optional.of(existing));
+
+    assertThatThrownBy(() -> knowledgeService.update(OWNER_ID, NOTE_ID, request))
+        .isInstanceOf(KnowledgeNoteVersionConflictException.class);
+    assertThat(existing.getContent()).isEqualTo("old content");
   }
 
   @Test

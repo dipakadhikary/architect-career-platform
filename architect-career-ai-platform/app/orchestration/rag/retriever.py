@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import time
+from collections.abc import Awaitable, Callable
+from typing import Protocol, TypeVar
 
 from app.infrastructure.observability.otel import get_tracer
 from app.intelligence.assistant.errors import RagUnavailableError
 from app.intelligence.embeddings.ports import EmbeddingPort, EmbeddingRequest
+from app.intelligence.knowledge.models import VectorRecord
 from app.intelligence.knowledge.vectorstore.ports import VectorSearchQuery, VectorStorePort
 from app.orchestration.rag.models import RetrievedChunk
 from app.shared.config.settings import AppSettings
@@ -16,9 +19,16 @@ from app.shared.logging.setup import get_logger
 from app.shared.observability.metrics import PlatformMetrics
 
 logger = get_logger(__name__)
+_T = TypeVar("_T")
 _tracer = get_tracer("acos.ai.rag")
 
 _RETRYABLE = (TimeoutError, ConnectionError, OSError)
+
+
+class ChunkRetriever(Protocol):
+    async def retrieve(self, query: str, *, owner_id: str) -> list[RetrievedChunk]:
+        """Return chunks the caller is allowed to read."""
+        ...
 
 
 class VectorRetriever:
@@ -37,10 +47,17 @@ class VectorRetriever:
         self._vector_store = vector_store
         self._metrics = metrics
 
-    async def retrieve(self, query: str, *, owner_id: str) -> list[RetrievedChunk]:
+    async def retrieve(
+        self,
+        query: str,
+        *,
+        owner_id: str,
+        top_k: int | None = None,
+    ) -> list[RetrievedChunk]:
         started = time.perf_counter()
+        limit = self._settings.rag_top_k if top_k is None else top_k
         vector = await self._embed(query)
-        hits = await self._search(vector, owner_id)
+        hits = await self._search(vector, owner_id, limit)
         self._metrics.rag_retrieval_latency.observe(time.perf_counter() - started)
         visible = [hit for hit in hits if hit.owner_id == owner_id]
         minimum = self._settings.rag_min_score
@@ -53,7 +70,7 @@ class VectorRetriever:
                 dropped=len(hits) - len(visible),
             )
         ranked = sorted(visible, key=lambda item: item.score, reverse=True)
-        limited = ranked[: self._settings.rag_top_k]
+        limited = ranked[:limit]
         self._metrics.rag_retrieved_chunks.observe(len(limited))
         logger.info(
             "rag.retrieval.completed",
@@ -85,7 +102,7 @@ class VectorRetriever:
             self._metrics.rag_embedding_latency.observe(time.perf_counter() - started)
         return vector
 
-    async def _search(self, vector: list[float], owner_id: str) -> list[RetrievedChunk]:
+    async def _search(self, vector: list[float], owner_id: str, top_k: int) -> list[RetrievedChunk]:
         started = time.perf_counter()
         minimum = self._settings.rag_min_score
 
@@ -93,12 +110,12 @@ class VectorRetriever:
             records = await self._vector_store.search(
                 VectorSearchQuery(
                     embedding=vector,
-                    top_k=self._settings.rag_top_k,
+                    top_k=top_k,
                     score_threshold=minimum,
                     filters={"owner_id": owner_id},
                 )
             )
-            return [_chunk(record) for record in records]
+            return [chunk_from_record(record) for record in records]
 
         try:
             with _tracer.start_as_current_span("vector.retrieval"):
@@ -106,7 +123,7 @@ class VectorRetriever:
         finally:
             self._metrics.rag_search_latency.observe(time.perf_counter() - started)
 
-    async def _attempt(self, fn):
+    async def _attempt(self, fn: Callable[[], Awaitable[_T]]) -> _T:
         attempts = self._settings.rag_retry_attempts
         last: Exception | None = None
         for attempt in range(1, attempts + 1):
@@ -125,7 +142,7 @@ class VectorRetriever:
         raise RagUnavailableError() from last
 
 
-def _chunk(record) -> RetrievedChunk:
+def chunk_from_record(record: VectorRecord) -> RetrievedChunk:
     metadata = record.metadata or {}
     return RetrievedChunk(
         chunk_id=str(record.id),

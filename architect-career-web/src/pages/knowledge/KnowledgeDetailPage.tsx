@@ -16,6 +16,7 @@ import {
 import { useNotification } from '@/shared/hooks/useNotification';
 import { formatDate, formatDateTime } from '@/shared/utils/date';
 import { getErrorMessage } from '@/shared/utils/error';
+import { AiAuthoringPanel } from '@/features/ai/components/AiAuthoringPanel';
 import { KnowledgeNoteForm } from '@/features/knowledge/components/KnowledgeNoteForm';
 import {
   useDeleteKnowledgeNoteMutation,
@@ -53,7 +54,7 @@ export function KnowledgeDetailPage() {
       try {
         await updateMutation.mutateAsync({
           noteId,
-          payload: toKnowledgeNoteRequest(values),
+          payload: toKnowledgeNoteRequest(values, noteQuery.data?.version),
         });
         notification.success('Knowledge note updated');
         setEditOpen(false);
@@ -61,7 +62,7 @@ export function KnowledgeDetailPage() {
         notification.error(getErrorMessage(error, 'Failed to update note'));
       }
     },
-    [noteId, notification, updateMutation],
+    [noteId, noteQuery.data?.version, notification, updateMutation],
   );
 
   const handleDelete = useCallback(async () => {
@@ -121,6 +122,7 @@ export function KnowledgeDetailPage() {
             <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/knowledge')}>
               Back
             </Button>
+            <AiAuthoringPanel note={note} onSaved={() => void noteQuery.refetch()} />
             <Button
               startIcon={<EditOutlinedIcon />}
               variant="outlined"

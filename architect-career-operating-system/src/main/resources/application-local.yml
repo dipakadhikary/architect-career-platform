@@ -5,8 +5,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://${ACOS_DB_HOST:localhost}:${ACOS_DB_PORT:5432}/${ACOS_DB_NAME:postgres}?currentSchema=acos
-    username: ${ACOS_DB_USER:postgres}
-    password: ${ACOS_DB_PASSWORD:postgres}
+    username: ${ACOS_DB_USER:test}
+    password: ${ACOS_DB_PASSWORD:test}
     driver-class-name: org.postgresql.Driver
     hikari:
       pool-name: acos-local-pool
@@ -35,6 +35,11 @@ spring:
 
 server:
   port: 8080
+
+ai:
+  platform:
+    enabled: true
+    base-url: http://localhost:8090
 
 logging:
   level:

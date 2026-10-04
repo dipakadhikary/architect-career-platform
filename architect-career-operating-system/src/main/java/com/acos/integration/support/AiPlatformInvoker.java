@@ -19,6 +19,7 @@ import io.github.resilience4j.retry.RetryRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiter;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import java.time.Duration;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -26,7 +27,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
+import org.slf4j.MDC;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 /**
  * Executes AI Platform capability calls with feature toggle, Resilience4j decorators, metrics, and
@@ -127,12 +133,42 @@ public class AiPlatformInvoker {
 
   private <T> T invokeWithTimeLimit(Supplier<T> liveCall) {
     Duration timeout = timeLimiter.getTimeLimiterConfig().getTimeoutDuration();
+    RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+    SecurityContext securityContext = SecurityContextHolder.getContext();
+    Map<String, String> mdc = MDC.getCopyOfContextMap();
     try {
-      return CompletableFuture.supplyAsync(liveCall)
+      return CompletableFuture.supplyAsync(
+              () -> callWithCapturedContext(liveCall, requestAttributes, securityContext, mdc))
           .orTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS)
           .join();
     } catch (CompletionException ex) {
       throw launderCompletion(ex);
+    }
+  }
+
+  /**
+   * Runs the Feign call on the timeout thread with the caller request still visible. {@code
+   * RequestContextHolder} and {@code SecurityContextHolder} are thread-local, so {@code
+   * supplyAsync} otherwise drops the bearer token.
+   */
+  private static <T> T callWithCapturedContext(
+      Supplier<T> liveCall,
+      RequestAttributes requestAttributes,
+      SecurityContext securityContext,
+      Map<String, String> mdc) {
+    try {
+      if (requestAttributes != null) {
+        RequestContextHolder.setRequestAttributes(requestAttributes);
+      }
+      SecurityContextHolder.setContext(securityContext);
+      if (mdc != null) {
+        MDC.setContextMap(mdc);
+      }
+      return liveCall.get();
+    } finally {
+      RequestContextHolder.resetRequestAttributes();
+      SecurityContextHolder.clearContext();
+      MDC.clear();
     }
   }
 

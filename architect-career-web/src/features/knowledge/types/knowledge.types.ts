@@ -15,6 +15,7 @@ export interface KnowledgeNoteResponse {
   tags: string[];
   createdAt: string;
   updatedAt: string;
+  version: number;
 }
 
 export interface KnowledgeNoteRequest {
@@ -23,6 +24,7 @@ export interface KnowledgeNoteRequest {
   content: string;
   categoryName?: string | null;
   tagNames?: string[] | null;
+  expectedVersion?: number | null;
 }
 
 export interface KnowledgeNoteListParams extends PageParams {

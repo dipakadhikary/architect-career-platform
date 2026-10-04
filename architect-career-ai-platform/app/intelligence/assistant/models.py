@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 
 class ChatRole(StrEnum):
@@ -42,15 +42,28 @@ class AnswerSource(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    content_id: str = Field(alias="contentId")
+    content_id: str = Field(
+        validation_alias=AliasChoices("contentId", "content_id"),
+        serialization_alias="contentId",
+    )
     title: str
-    content_type: str = Field(alias="contentType")
+    content_type: str = Field(
+        validation_alias=AliasChoices("contentType", "content_type"),
+        serialization_alias="contentType",
+    )
     section: str
     path: str
     url: str
-    chunk_id: str = Field(alias="chunkId")
+    chunk_id: str = Field(
+        validation_alias=AliasChoices("chunkId", "chunk_id"),
+        serialization_alias="chunkId",
+    )
     score: float
-    topic_id: str | None = Field(default=None, alias="topicId")
+    topic_id: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("topicId", "topic_id"),
+        serialization_alias="topicId",
+    )
 
 
 class ChatResponse(BaseModel):

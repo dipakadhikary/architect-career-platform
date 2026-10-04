@@ -165,6 +165,171 @@ class AppSettings(BaseSettings):
         default="1",
         validation_alias=AliasChoices("RAG_PROMPT_VERSION", "rag_prompt_version"),
     )
+    rag_hybrid_enabled: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("RAG_HYBRID_ENABLED", "rag_hybrid_enabled"),
+    )
+    rag_lexical_top_k: int = Field(
+        default=20,
+        ge=1,
+        le=50,
+        validation_alias=AliasChoices("RAG_LEXICAL_TOP_K", "rag_lexical_top_k"),
+    )
+    rag_vector_top_k: int = Field(
+        default=20,
+        ge=1,
+        le=50,
+        validation_alias=AliasChoices("RAG_VECTOR_TOP_K", "rag_vector_top_k"),
+    )
+    rag_fusion_strategy: Literal["rrf", "weighted"] = Field(
+        default="rrf",
+        validation_alias=AliasChoices("RAG_FUSION_STRATEGY", "rag_fusion_strategy"),
+    )
+    rag_rrf_k: int = Field(
+        default=60,
+        ge=1,
+        le=1000,
+        validation_alias=AliasChoices("RAG_RRF_K", "rag_rrf_k"),
+    )
+    rag_fusion_top_k: int = Field(
+        default=20,
+        ge=1,
+        le=50,
+        validation_alias=AliasChoices("RAG_FUSION_TOP_K", "rag_fusion_top_k"),
+    )
+    rag_lexical_weight: float = Field(
+        default=0.5,
+        ge=0,
+        le=1,
+        validation_alias=AliasChoices("RAG_LEXICAL_WEIGHT", "rag_lexical_weight"),
+    )
+    rag_vector_weight: float = Field(
+        default=0.5,
+        ge=0,
+        le=1,
+        validation_alias=AliasChoices("RAG_VECTOR_WEIGHT", "rag_vector_weight"),
+    )
+    rag_reranking_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("RAG_RERANKING_ENABLED", "rag_reranking_enabled"),
+    )
+    rag_rerank_model: str = Field(
+        default="",
+        validation_alias=AliasChoices("RAG_RERANK_MODEL", "rag_rerank_model"),
+    )
+    rag_rerank_candidate_k: int = Field(
+        default=20,
+        ge=1,
+        le=50,
+        validation_alias=AliasChoices("RAG_RERANK_CANDIDATE_K", "rag_rerank_candidate_k"),
+    )
+    rag_rerank_top_k: int = Field(
+        default=10,
+        ge=1,
+        le=20,
+        validation_alias=AliasChoices("RAG_RERANK_TOP_K", "rag_rerank_top_k"),
+    )
+    rag_rerank_min_score: float | None = Field(
+        default=None,
+        validation_alias=AliasChoices("RAG_RERANK_MIN_SCORE", "rag_rerank_min_score"),
+    )
+    rag_lexical_timeout_seconds: float = Field(
+        default=5,
+        gt=0,
+        validation_alias=AliasChoices(
+            "RAG_LEXICAL_TIMEOUT_SECONDS", "rag_lexical_timeout_seconds"
+        ),
+    )
+    rag_rerank_timeout_seconds: float = Field(
+        default=5,
+        gt=0,
+        validation_alias=AliasChoices(
+            "RAG_RERANK_TIMEOUT_SECONDS", "rag_rerank_timeout_seconds"
+        ),
+    )
+    conversation_database: str = Field(
+        default=".data/ai_conversations.sqlite",
+        validation_alias=AliasChoices("CONVERSATION_DATABASE", "conversation_database"),
+    )
+    conversation_max_messages: int = Field(
+        default=12,
+        ge=2,
+        le=40,
+        validation_alias=AliasChoices(
+            "CONVERSATION_MAX_MESSAGES", "conversation_max_messages"
+        ),
+    )
+    conversation_max_characters: int = Field(
+        default=8000,
+        ge=200,
+        validation_alias=AliasChoices(
+            "CONVERSATION_MAX_CHARACTERS", "conversation_max_characters"
+        ),
+    )
+    conversation_message_limit: int = Field(
+        default=50,
+        ge=1,
+        le=100,
+        validation_alias=AliasChoices(
+            "CONVERSATION_MESSAGE_LIMIT", "conversation_message_limit"
+        ),
+    )
+    conversation_title_max_length: int = Field(
+        default=80,
+        ge=8,
+        le=120,
+        validation_alias=AliasChoices(
+            "CONVERSATION_TITLE_MAX_LENGTH", "conversation_title_max_length"
+        ),
+    )
+    conversation_processing_timeout_seconds: float = Field(
+        default=120,
+        gt=0,
+        validation_alias=AliasChoices(
+            "CONVERSATION_PROCESSING_TIMEOUT_SECONDS",
+            "conversation_processing_timeout_seconds",
+        ),
+    )
+    authoring_max_output_tokens: int = Field(
+        default=1200,
+        ge=64,
+        le=4096,
+        validation_alias=AliasChoices(
+            "AI_AUTHORING_MAX_OUTPUT_TOKENS", "authoring_max_output_tokens"
+        ),
+    )
+    authoring_temperature: float = Field(
+        default=0.2,
+        ge=0,
+        le=1,
+        validation_alias=AliasChoices(
+            "AI_AUTHORING_DEFAULT_TEMPERATURE", "authoring_temperature"
+        ),
+    )
+    authoring_max_input_characters: int = Field(
+        default=12000,
+        ge=200,
+        validation_alias=AliasChoices(
+            "AI_AUTHORING_MAX_INPUT_CHARACTERS", "authoring_max_input_characters"
+        ),
+    )
+    authoring_max_output_characters: int = Field(
+        default=20000,
+        ge=200,
+        validation_alias=AliasChoices(
+            "AI_AUTHORING_MAX_OUTPUT_CHARACTERS", "authoring_max_output_characters"
+        ),
+    )
+    authoring_max_questions: int = Field(
+        default=10,
+        ge=1,
+        le=20,
+        validation_alias=AliasChoices("AI_AUTHORING_MAX_QUESTIONS", "authoring_max_questions"),
+    )
+    authoring_prompt_version: str = Field(
+        default="v1",
+        validation_alias=AliasChoices("AI_AUTHORING_PROMPT_VERSION", "authoring_prompt_version"),
+    )
 
     langfuse_public_key: str = ""
     langfuse_secret_key: SecretStr | None = None

@@ -223,6 +223,96 @@ export interface AssistantAskResponse {
   sources?: AssistantSource[];
 }
 
+export interface AssistantConversation {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AssistantConversationPage {
+  content: AssistantConversation[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+}
+
+export interface AssistantConversationMessage {
+  id: string;
+  role: string;
+  content: string;
+  sequenceNumber: number;
+  status: string;
+  createdAt: string;
+  model: string;
+  provider: string;
+  grounded: boolean;
+  sources: AssistantSource[];
+}
+
+export interface AssistantConversationDetail extends AssistantConversation {
+  messages: AssistantConversationMessage[];
+  truncated: boolean;
+}
+
+export interface AssistantMessagePair {
+  userMessage: AssistantConversationMessage;
+  assistantMessage: AssistantConversationMessage;
+}
+
+export type AuthoringOperation =
+  | 'GENERATE'
+  | 'IMPROVE'
+  | 'REWRITE'
+  | 'SUMMARIZE'
+  | 'EXPAND'
+  | 'GENERATE_QA'
+  | 'GENERATE_EXAMPLES'
+  | 'GENERATE_EXPLANATION'
+  | 'GENERATE_OBJECTIVES'
+  | 'GENERATE_PREREQUISITES'
+  | 'SUGGEST_STRUCTURE'
+  | 'GENERATE_CODE';
+
+export interface AuthoringQuestion {
+  question: string;
+  answer: string;
+  difficulty: string;
+  explanation?: string;
+}
+
+export interface AuthoringProposal {
+  proposalId: string;
+  operation: AuthoringOperation;
+  status: 'GENERATED' | 'EDITING' | 'APPROVED' | 'REJECTED';
+  content: string;
+  questions: AuthoringQuestion[];
+  sources: AssistantSource[];
+  warnings: string[];
+  model: string;
+  provider: string;
+  promptVersion: string;
+  grounded: boolean;
+  authoritative: false;
+  contentId?: string | null;
+  sourceVersion?: number | null;
+}
+
+export interface AuthoringProposalRequest {
+  operation: AuthoringOperation;
+  topic?: string;
+  instructions?: string;
+  contentId?: string;
+  conversationId?: string;
+  useConversation?: boolean;
+  useKnowledge?: boolean;
+  questionCount?: number;
+  difficulty?: string;
+}
+
 export interface ChatCompletionRequest {
   message: string;
   conversationId?: string;

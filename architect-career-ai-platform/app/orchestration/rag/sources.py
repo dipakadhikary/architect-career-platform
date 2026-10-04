@@ -3,16 +3,16 @@
 from __future__ import annotations
 
 from app.intelligence.assistant.models import AnswerSource
-from app.orchestration.rag.models import RetrievedChunk
+from app.orchestration.rag.models import RetrievedChunk, ordered_for_context, outranks
 
 
 def sources_from_chunks(chunks: list[RetrievedChunk], *, limit: int) -> list[AnswerSource]:
     best: dict[str, RetrievedChunk] = {}
     for chunk in chunks:
         current = best.get(chunk.content_id)
-        if current is None or chunk.score > current.score:
+        if current is None or outranks(chunk, current):
             best[chunk.content_id] = chunk
-    ordered = sorted(best.values(), key=lambda item: item.score, reverse=True)
+    ordered = ordered_for_context(list(best.values()))
     return [_source(chunk) for chunk in ordered[:limit]]
 
 

@@ -9,6 +9,7 @@ from jose import JWTError, jwt
 
 from app.shared.config.settings import AppSettings
 from app.shared.exceptions import AuthenticationError
+from app.shared.security.jwt_algorithms import hmac_algorithms_for_secret
 
 
 @dataclass(slots=True, frozen=True)
@@ -64,10 +65,11 @@ class AuthenticationService:
     def _validate_jwt(self, token: str) -> AuthenticatedPrincipal:
         options = {"verify_aud": bool(self._settings.auth_jwt_audience)}
         try:
+            secret = self._settings.auth_jwt_secret.get_secret_value()
             claims = jwt.decode(
                 token,
-                self._settings.auth_jwt_secret.get_secret_value(),
-                algorithms=[self._settings.auth_jwt_algorithm],
+                secret,
+                algorithms=hmac_algorithms_for_secret(secret, self._settings.auth_jwt_algorithm),
                 audience=self._settings.auth_jwt_audience or None,
                 issuer=self._settings.auth_jwt_issuer or None,
                 options=options,

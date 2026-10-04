@@ -21,6 +21,7 @@ def _settings(**overrides: object) -> AppSettings:
         "otel_enabled": False,
         "auth_jwt_secret": SecretStr("change-me"),
         "auth_jwt_algorithm": "HS256",
+        "auth_jwt_issuer": "",
         "auth_api_key_enabled": True,
         "auth_api_keys": "service-key",
         "auth_internal_service_tokens": "internal-token",
@@ -42,6 +43,28 @@ def test_jwt_subject_is_the_owner() -> None:
     assert caller.owner_id == "user-42"
     assert caller.auth_method == "jwt"
     assert caller.correlation_id == "c1"
+
+
+def test_java_hs384_token_is_accepted() -> None:
+    secret = "change-me-to-a-secure-secret-key-at-least-32-chars"
+    token = jwt.encode(
+        {"sub": "user-42", "iss": "acos-platform"},
+        secret,
+        algorithm="HS384",
+    )
+    caller = resolve_caller(
+        _settings(
+            auth_jwt_secret=SecretStr(secret),
+            auth_jwt_issuer="acos-platform",
+        ),
+        authorization=f"Bearer {token}",
+        api_key=None,
+        internal_service_token=None,
+        user_id_header=None,
+        correlation_id="c1",
+    )
+    assert caller.owner_id == "user-42"
+    assert caller.auth_method == "jwt"
 
 
 def test_invalid_jwt_is_rejected_even_when_api_key_matches() -> None:

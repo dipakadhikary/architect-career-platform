@@ -32,7 +32,13 @@ class AssistantService:
         self._prompt_builder = prompt_builder or PromptBuilder()
         self._rag = rag if settings.rag_enabled else None
 
-    async def chat(self, request: ChatRequest, caller: CallerContext) -> ChatResponse:
+    async def chat(
+        self,
+        request: ChatRequest,
+        caller: CallerContext,
+        *,
+        retrieval_query: str | None = None,
+    ) -> ChatResponse:
         started = time.perf_counter()
         provider_name = self._provider.provider_name
         logger.info(
@@ -46,7 +52,12 @@ class AssistantService:
             self._ensure_owner(request, caller)
             self._validate_limits(request)
             if self._rag is not None:
-                grounded = await self._rag.answer(request, caller, self._provider)
+                grounded = await self._rag.answer(
+                    request,
+                    caller,
+                    self._provider,
+                    retrieval_query=retrieval_query,
+                )
                 return self._finish(caller, started, grounded)
             messages = self._prompt_builder.build(
                 self._settings.ai_system_instruction, request.messages
@@ -100,9 +111,9 @@ class AssistantService:
             get_metrics().token_usage.labels(response.provider, response.model, "prompt").inc(
                 prompt_tokens
             )
-            get_metrics().token_usage.labels(
-                response.provider, response.model, "completion"
-            ).inc(completion_tokens)
+            get_metrics().token_usage.labels(response.provider, response.model, "completion").inc(
+                completion_tokens
+            )
         logger.info(
             "assistant.chat.completed",
             provider=response.provider,
@@ -133,4 +144,3 @@ class AssistantService:
         for message in request.messages:
             if len(message.content) > limit:
                 raise ValidationFailedError("A message exceeds the configured size limit")
-

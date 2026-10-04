@@ -115,6 +115,169 @@ class PlatformMetrics:
             "Deduplicated sources returned with an answer",
             registry=self.registry,
         )
+        self.rag_hybrid_requests = Counter(
+            "acos_ai_hybrid_retrieval_total",
+            "Hybrid retrieval outcomes",
+            ["outcome"],
+            registry=self.registry,
+        )
+        self.rag_lexical_requests = Counter(
+            "acos_ai_lexical_retrieval_total",
+            "Lexical retrieval leg outcomes",
+            ["outcome"],
+            registry=self.registry,
+        )
+        self.rag_vector_leg_requests = Counter(
+            "acos_ai_vector_retrieval_total",
+            "Vector retrieval leg outcomes",
+            ["outcome"],
+            registry=self.registry,
+        )
+        self.rag_no_results = Counter(
+            "acos_ai_retrieval_no_results_total",
+            "Hybrid retrieval calls with no authorized hits",
+            registry=self.registry,
+        )
+        self.rag_reranker_requests = Counter(
+            "acos_ai_reranker_requests_total",
+            "Reranker calls by outcome",
+            ["outcome"],
+            registry=self.registry,
+        )
+        self.rag_reranker_failures = Counter(
+            "acos_ai_reranker_failures_total",
+            "Reranker failures that fell back to fused order",
+            registry=self.registry,
+        )
+        self.rag_lexical_latency = Histogram(
+            "acos_ai_lexical_retrieval_latency_seconds",
+            "Lexical retrieval latency",
+            registry=self.registry,
+        )
+        self.rag_vector_leg_latency = Histogram(
+            "acos_ai_vector_retrieval_latency_seconds",
+            "Vector retrieval leg latency",
+            registry=self.registry,
+        )
+        self.rag_fusion_latency = Histogram(
+            "acos_ai_fusion_latency_seconds",
+            "Result fusion latency",
+            registry=self.registry,
+        )
+        self.rag_reranker_latency = Histogram(
+            "acos_ai_reranker_latency_seconds",
+            "Reranker latency",
+            registry=self.registry,
+        )
+        self.rag_hybrid_latency = Histogram(
+            "acos_ai_total_retrieval_latency_seconds",
+            "Hybrid retrieval latency",
+            registry=self.registry,
+        )
+        self.rag_candidates_before_auth = Histogram(
+            "acos_ai_candidates_before_auth",
+            "Candidates returned before the owner filter",
+            registry=self.registry,
+        )
+        self.rag_candidates_after_auth = Histogram(
+            "acos_ai_candidates_after_auth",
+            "Unique candidates after the owner filter",
+            registry=self.registry,
+        )
+        self.conversation_created = Counter(
+            "acos_ai_conversations_created_total",
+            "Conversations created",
+            registry=self.registry,
+        )
+        self.conversation_deleted = Counter(
+            "acos_ai_conversations_deleted_total",
+            "Conversations deleted",
+            registry=self.registry,
+        )
+        self.conversation_messages = Counter(
+            "acos_ai_messages_total",
+            "Conversation messages by role and status",
+            ["role", "status"],
+            registry=self.registry,
+        )
+        self.conversation_failures = Counter(
+            "acos_ai_conversation_failures_total",
+            "Assistant generations that failed after the user message was stored",
+            registry=self.registry,
+        )
+        self.conversation_context_messages = Histogram(
+            "acos_ai_conversation_context_messages",
+            "Completed messages included in the model context",
+            registry=self.registry,
+        )
+        self.conversation_context_characters = Histogram(
+            "acos_ai_conversation_context_characters",
+            "Characters of conversation history sent to the model",
+            registry=self.registry,
+        )
+        self.conversation_latency = Histogram(
+            "acos_ai_conversation_request_latency_seconds",
+            "Conversation message request latency",
+            registry=self.registry,
+        )
+        self.authoring_requests = Counter(
+            "acos_ai_authoring_requests_total",
+            "Authoring requests by operation",
+            ["operation"],
+            registry=self.registry,
+        )
+        self.authoring_success = Counter(
+            "acos_ai_authoring_success_total",
+            "Authoring proposals produced",
+            ["operation"],
+            registry=self.registry,
+        )
+        self.authoring_failure = Counter(
+            "acos_ai_authoring_failure_total",
+            "Authoring generations that failed",
+            ["operation"],
+            registry=self.registry,
+        )
+        self.authoring_regeneration = Counter(
+            "acos_ai_authoring_regeneration_total",
+            "Authoring regenerations",
+            registry=self.registry,
+        )
+        self.authoring_validation_failure = Counter(
+            "acos_ai_authoring_validation_failure_total",
+            "Authoring outputs rejected by validation",
+            registry=self.registry,
+        )
+        self.authoring_approval = Counter(
+            "acos_ai_authoring_approval_total",
+            "Authoring proposals accepted for later ACOS save",
+            registry=self.registry,
+        )
+        self.authoring_rejection = Counter(
+            "acos_ai_authoring_rejection_total",
+            "Authoring proposals rejected",
+            registry=self.registry,
+        )
+        self.authoring_latency = Histogram(
+            "acos_ai_authoring_latency_seconds",
+            "Authoring generation latency",
+            registry=self.registry,
+        )
+        self.authoring_tokens_input = Counter(
+            "acos_ai_authoring_tokens_input_total",
+            "Authoring prompt tokens reported by the provider",
+            registry=self.registry,
+        )
+        self.authoring_tokens_output = Counter(
+            "acos_ai_authoring_tokens_output_total",
+            "Authoring completion tokens reported by the provider",
+            registry=self.registry,
+        )
+        self.rag_final_chunks = Histogram(
+            "acos_ai_final_context_chunks",
+            "Chunks sent to context construction",
+            registry=self.registry,
+        )
         self.http_latency = Histogram(
             "acos_ai_http_request_duration_seconds",
             "HTTP request latency in seconds",

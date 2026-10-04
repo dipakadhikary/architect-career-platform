@@ -6,8 +6,10 @@ from fastapi import APIRouter
 
 from app.api.v1 import (
     assistant,
+    authoring,
     career,
     chat,
+    conversations,
     health,
     indexing,
     knowledge,
@@ -20,6 +22,8 @@ from app.api.v1 import (
 
 api_router = APIRouter()
 api_router.include_router(assistant.router)
+api_router.include_router(authoring.router)
+api_router.include_router(conversations.router)
 api_router.include_router(indexing.router)
 api_router.include_router(health.router)
 api_router.include_router(knowledge.router)

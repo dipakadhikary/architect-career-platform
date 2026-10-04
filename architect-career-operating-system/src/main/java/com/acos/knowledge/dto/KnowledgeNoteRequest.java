@@ -15,6 +15,7 @@ import java.util.List;
  *     update
  * @param tagNames optional tag names; on create {@code null} means no tags; on update {@code null}
  *     leaves tags unchanged and an empty list clears tags
+ * @param expectedVersion optional version the caller reviewed; a mismatch is a conflict
  */
 @Schema(
     name = "KnowledgeNoteRequest",
@@ -49,4 +50,10 @@ public record KnowledgeNoteRequest(
             nullable = true)
         List<
                 @NotBlank(message = "tag name must not be blank") @Size(max = 50, message = "tag name must not exceed 50 characters") String>
-            tagNames) {}
+            tagNames,
+    @Schema(
+            description =
+                "Expected optimistic-lock version. When present, a mismatch is rejected so a"
+                    + " newer note is not overwritten.",
+            nullable = true)
+        Long expectedVersion) {}

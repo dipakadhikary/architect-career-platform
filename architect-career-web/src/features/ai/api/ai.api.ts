@@ -6,6 +6,12 @@ import type { ApiResponse } from '@/shared/api/types';
 import type {
   AssistantAskRequest,
   AssistantAskResponse,
+  AuthoringProposal,
+  AuthoringProposalRequest,
+  AssistantConversation,
+  AssistantConversationDetail,
+  AssistantConversationPage,
+  AssistantMessagePair,
   ChatCompletionRequest,
   ChatCompletionResponse,
   CoverLetterRequest,
@@ -147,6 +153,102 @@ export const aiApi = {
     const response = await apiClient.post<ApiResponse<SkillGapResponse>>(
       `${BASE}/portfolio/skill-gap/analyze`,
       payload,
+      { timeout },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async listConversations(page = 0, size = 20): Promise<AssistantConversationPage> {
+    const response = await apiClient.get<ApiResponse<AssistantConversationPage>>(
+      `${BASE}/conversations`,
+      { timeout, params: { page, size } },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async createConversation(): Promise<AssistantConversation> {
+    const response = await apiClient.post<ApiResponse<AssistantConversation>>(
+      `${BASE}/conversations`,
+      {},
+      { timeout },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async getConversation(conversationId: string): Promise<AssistantConversationDetail> {
+    const response = await apiClient.get<ApiResponse<AssistantConversationDetail>>(
+      `${BASE}/conversations/${conversationId}`,
+      { timeout },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async renameConversation(conversationId: string, title: string): Promise<AssistantConversation> {
+    const response = await apiClient.patch<ApiResponse<AssistantConversation>>(
+      `${BASE}/conversations/${conversationId}`,
+      { title },
+      { timeout },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async deleteConversation(conversationId: string): Promise<void> {
+    await apiClient.delete(`${BASE}/conversations/${conversationId}`, { timeout });
+  },
+
+  async sendConversationMessage(
+    conversationId: string,
+    content: string,
+    idempotencyKey: string,
+  ): Promise<AssistantMessagePair> {
+    const response = await apiClient.post<ApiResponse<AssistantMessagePair>>(
+      `${BASE}/conversations/${conversationId}/messages`,
+      { content },
+      { timeout, headers: { 'Idempotency-Key': idempotencyKey } },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async generateProposal(payload: AuthoringProposalRequest): Promise<AuthoringProposal> {
+    const response = await apiClient.post<ApiResponse<AuthoringProposal>>(
+      `${BASE}/authoring/proposals`,
+      payload,
+      { timeout },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async editProposal(proposalId: string, content: string): Promise<AuthoringProposal> {
+    const response = await apiClient.patch<ApiResponse<AuthoringProposal>>(
+      `${BASE}/authoring/proposals/${proposalId}`,
+      { content },
+      { timeout },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async regenerateProposal(proposalId: string, instructions?: string): Promise<AuthoringProposal> {
+    const response = await apiClient.post<ApiResponse<AuthoringProposal>>(
+      `${BASE}/authoring/proposals/${proposalId}/regenerate`,
+      { instructions },
+      { timeout },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async acceptProposal(proposalId: string): Promise<AuthoringProposal> {
+    const response = await apiClient.post<ApiResponse<AuthoringProposal>>(
+      `${BASE}/authoring/proposals/${proposalId}/accept`,
+      {},
+      { timeout },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async rejectProposal(proposalId: string): Promise<AuthoringProposal> {
+    const response = await apiClient.post<ApiResponse<AuthoringProposal>>(
+      `${BASE}/authoring/proposals/${proposalId}/reject`,
+      {},
       { timeout },
     );
     return unwrapApiResponse(response);

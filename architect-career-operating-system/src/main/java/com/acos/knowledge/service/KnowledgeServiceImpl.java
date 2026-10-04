@@ -11,6 +11,7 @@ import com.acos.knowledge.event.KnowledgeDeletedEvent;
 import com.acos.knowledge.event.KnowledgeDomainEventPublisher;
 import com.acos.knowledge.event.KnowledgeUpdatedEvent;
 import com.acos.knowledge.exception.KnowledgeNoteNotFoundException;
+import com.acos.knowledge.exception.KnowledgeNoteVersionConflictException;
 import com.acos.knowledge.mapper.KnowledgeNoteMapper;
 import com.acos.knowledge.repository.CategoryRepository;
 import com.acos.knowledge.repository.KnowledgeNoteRepository;
@@ -109,6 +110,9 @@ public class KnowledgeServiceImpl implements KnowledgeService {
     Objects.requireNonNull(request, "request must not be null");
 
     KnowledgeNote note = requireOwnedNote(ownerId, noteId);
+    if (request.expectedVersion() != null && request.expectedVersion() != note.getVersion()) {
+      throw new KnowledgeNoteVersionConflictException(noteId);
+    }
     knowledgeNoteValidator.validateContent(request.content());
 
     note.setTitle(request.title().trim());

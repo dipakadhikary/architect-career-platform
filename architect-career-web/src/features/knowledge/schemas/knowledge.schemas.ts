@@ -49,12 +49,16 @@ export const knowledgeNoteSchema = z.object({
 
 export type KnowledgeNoteFormValues = z.infer<typeof knowledgeNoteSchema>;
 
-export function toKnowledgeNoteRequest(values: KnowledgeNoteFormValues): {
+export function toKnowledgeNoteRequest(
+  values: KnowledgeNoteFormValues,
+  expectedVersion?: number | null,
+): {
   title: string;
   summary: string;
   content: string;
   categoryName: string | null;
   tagNames: string[] | null;
+  expectedVersion?: number | null;
 } {
   const categoryName = values.categoryName?.trim();
   const tagNames = values.tagNames?.map((tag) => tag.trim()).filter(Boolean) ?? [];
@@ -65,6 +69,7 @@ export function toKnowledgeNoteRequest(values: KnowledgeNoteFormValues): {
     content: values.content.trim(),
     categoryName: categoryName ? categoryName : null,
     tagNames: tagNames.length > 0 ? tagNames : null,
+    expectedVersion: expectedVersion ?? null,
   };
 }
 
