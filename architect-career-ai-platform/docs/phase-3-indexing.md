@@ -1,6 +1,6 @@
 # Phase 3 — Knowledge ingestion and embedding
 
-Phase 3 creates the AI index but does not use it for answer generation.
+Phase 3 creates the AI index. Phase 4 uses that index for grounded answers. See `docs/phase-4-rag.md`.
 
 `POST /api/v1/ai/chat` is unchanged. It does not search vectors, merge full-text results, or rerank. Persistent conversations are not part of this phase.
 

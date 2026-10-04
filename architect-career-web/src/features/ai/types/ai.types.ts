@@ -56,6 +56,8 @@ export interface ChatMessage {
   status: ChatMessageStatus;
   /** Reserved for future token streaming chunks */
   streaming?: boolean;
+  grounded?: boolean;
+  sources?: AssistantSource[];
 }
 
 export interface ChatSession {
@@ -201,10 +203,24 @@ export interface AssistantAskRequest {
   messages: Array<{ role: ChatRole; content: string }>;
 }
 
+export interface AssistantSource {
+  contentId: string;
+  topicId?: string | null;
+  title: string;
+  contentType: string;
+  section: string;
+  path: string;
+  url: string;
+  chunkId: string;
+  score: number;
+}
+
 export interface AssistantAskResponse {
   answer: string;
   model: string;
   provider: string;
+  grounded?: boolean;
+  sources?: AssistantSource[];
 }
 
 export interface ChatCompletionRequest {

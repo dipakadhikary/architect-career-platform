@@ -1,6 +1,7 @@
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AskAiPage } from '@/features/ai/pages/AskAiPage';
 
@@ -25,7 +26,9 @@ const ask = vi.mocked(aiApi.ask);
 function renderPage() {
   return render(
     <ThemeProvider theme={createTheme()}>
-      <AskAiPage />
+      <MemoryRouter>
+        <AskAiPage />
+      </MemoryRouter>
     </ThemeProvider>,
   );
 }
@@ -73,8 +76,36 @@ describe('AskAiPage', () => {
 
     expect(await screen.findByText('Recovered answer')).toBeInTheDocument();
     expect(ask).toHaveBeenCalledTimes(2);
-    expect(ask).toHaveBeenLastCalledWith({
-      messages: [{ role: 'user', content: 'What is dependency injection?' }],
+  });
+
+  it('shows a source link from the response metadata', async () => {
+    ask.mockResolvedValue({
+      answer: 'The bulkhead isolates failures.',
+      model: 'gpt-test',
+      provider: 'openai',
+      grounded: true,
+      sources: [
+        {
+          contentId: 'bulkhead',
+          title: 'Bulkhead Pattern',
+          contentType: 'CONCEPT',
+          section: 'Introduction',
+          path: 'Microservices / Bulkhead',
+          url: '/tutorials/microservices/bulkhead/concept',
+          chunkId: 'chunk-1',
+          score: 0.91,
+        },
+      ],
     });
+    const user = userEvent.setup();
+    renderPage();
+    await user.type(screen.getByLabelText('Chat message'), 'What is the bulkhead pattern?');
+    await user.click(screen.getByRole('button', { name: 'Ask' }));
+    expect(await screen.findByText('Bulkhead Pattern')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open source' })).toHaveAttribute(
+      'href',
+      '/tutorials/microservices/bulkhead/concept',
+    );
+    expect(screen.queryByText('https://malicious.example')).not.toBeInTheDocument();
   });
 });

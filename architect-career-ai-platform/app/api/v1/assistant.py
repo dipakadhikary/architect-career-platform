@@ -9,9 +9,15 @@ from app.api.assistant_auth import resolve_caller
 from app.infrastructure.llm.chat_factory import build_chat_provider
 from app.intelligence.assistant.models import CallerContext, ChatRequest, ChatResponse
 from app.orchestration.assistant.service import AssistantService
+from app.orchestration.rag.context import ContextBuilder
+from app.orchestration.rag.engine import RagEngine
+from app.orchestration.rag.prompt import RagPromptBuilder
+from app.orchestration.rag.retriever import VectorRetriever
 from app.shared.config.settings import AppSettings, get_settings
 from app.shared.constants.headers import HeaderNames
 from app.shared.context.request_context import get_request_context
+from app.shared.di.container import container
+from app.shared.observability.metrics import get_metrics
 
 router = APIRouter(tags=["Assistant"])
 
@@ -26,7 +32,23 @@ class ReadinessResponse(BaseModel):
 
 
 def get_assistant_service(settings: AppSettings = Depends(get_settings)) -> AssistantService:
-    return AssistantService(settings=settings, provider=build_chat_provider(settings))
+    provider = build_chat_provider(settings)
+    rag = None
+    if settings.rag_enabled:
+        metrics = get_metrics()
+        rag = RagEngine(
+            settings=settings,
+            retriever=VectorRetriever(
+                settings=settings,
+                embeddings=container.embedding_port(),
+                vector_store=container.vector_store(),
+                metrics=metrics,
+            ),
+            context_builder=ContextBuilder(settings),
+            prompt_builder=RagPromptBuilder(),
+            metrics=metrics,
+        )
+    return AssistantService(settings=settings, provider=provider, rag=rag)
 
 
 def get_caller(
@@ -80,7 +102,7 @@ async def chat(
     caller: CallerContext = Depends(get_caller),
     service: AssistantService = Depends(get_assistant_service),
 ) -> ChatResponse:
-    """Answer a message list. Retrieval and citations are not part of this phase."""
+    """Answer a message list. Retrieval runs only when RAG is enabled."""
     return await service.chat(request, caller)
 
 

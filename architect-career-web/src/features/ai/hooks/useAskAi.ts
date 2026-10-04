@@ -33,7 +33,13 @@ export function useAskAi() {
       setMessages((current) =>
         current.map((message) =>
           message.id === pendingId
-            ? { ...message, content: response.answer, status: 'complete' }
+            ? {
+                ...message,
+                content: response.answer,
+                status: 'complete',
+                grounded: response.grounded ?? false,
+                sources: response.sources ?? [],
+              }
             : message,
         ),
       );

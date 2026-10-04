@@ -12,7 +12,7 @@ export function AskAiPage() {
     <Stack spacing={2}>
       <PageHeader
         title="Ask ACOS AI"
-        description="Ask a technical question. Answers are general AI responses and are not drawn from your ACOS notes."
+        description="Ask a technical question. When ACOS knowledge is relevant, the answer includes sources that open the original note or tutorial."
       />
       <Stack>
         {messages.map((message) => (

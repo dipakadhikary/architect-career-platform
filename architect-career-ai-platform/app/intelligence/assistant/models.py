@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ChatRole(StrEnum):
@@ -37,6 +37,22 @@ class ChatRequest(BaseModel):
     )
 
 
+class AnswerSource(BaseModel):
+    """Citation built from retrieved ACOS metadata, not from model text."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    content_id: str = Field(alias="contentId")
+    title: str
+    content_type: str = Field(alias="contentType")
+    section: str
+    path: str
+    url: str
+    chunk_id: str = Field(alias="chunkId")
+    score: float
+    topic_id: str | None = Field(default=None, alias="topicId")
+
+
 class ChatResponse(BaseModel):
     """Provider-neutral assistant answer."""
 
@@ -44,6 +60,8 @@ class ChatResponse(BaseModel):
     model: str
     provider: str
     correlation_id: str = ""
+    grounded: bool = False
+    sources: list[AnswerSource] = Field(default_factory=list)
 
 
 class CallerContext(BaseModel):

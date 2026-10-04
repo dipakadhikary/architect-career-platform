@@ -123,6 +123,48 @@ class AppSettings(BaseSettings):
         ),
         validation_alias=AliasChoices("AI_SYSTEM_INSTRUCTION", "ai_system_instruction"),
     )
+    rag_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("RAG_ENABLED", "rag_enabled"),
+    )
+    rag_top_k: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+        validation_alias=AliasChoices("RAG_TOP_K", "rag_top_k"),
+    )
+    rag_min_score: float | None = Field(
+        default=None,
+        validation_alias=AliasChoices("RAG_MIN_SCORE", "rag_min_score"),
+    )
+    rag_max_context_characters: int = Field(
+        default=6000,
+        ge=1,
+        validation_alias=AliasChoices(
+            "RAG_MAX_CONTEXT_CHARACTERS", "rag_max_context_characters"
+        ),
+    )
+    rag_max_sources: int = Field(
+        default=3,
+        ge=1,
+        le=10,
+        validation_alias=AliasChoices("RAG_MAX_SOURCES", "rag_max_sources"),
+    )
+    rag_timeout_seconds: float = Field(
+        default=10,
+        gt=0,
+        validation_alias=AliasChoices("RAG_TIMEOUT_SECONDS", "rag_timeout_seconds"),
+    )
+    rag_retry_attempts: int = Field(
+        default=2,
+        ge=1,
+        le=3,
+        validation_alias=AliasChoices("RAG_RETRY_ATTEMPTS", "rag_retry_attempts"),
+    )
+    rag_prompt_version: str = Field(
+        default="1",
+        validation_alias=AliasChoices("RAG_PROMPT_VERSION", "rag_prompt_version"),
+    )
 
     langfuse_public_key: str = ""
     langfuse_secret_key: SecretStr | None = None

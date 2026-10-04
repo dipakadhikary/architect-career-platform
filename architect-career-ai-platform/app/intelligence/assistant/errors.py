@@ -49,6 +49,17 @@ class ProviderAuthenticationError(PlatformError):
         )
 
 
+class RagUnavailableError(PlatformError):
+    def __init__(self, detail: str = "ACOS Knowledge search is temporarily unavailable.") -> None:
+        super().__init__(
+            title="Knowledge Search Unavailable",
+            detail=detail,
+            status=503,
+            code="AI_KNOWLEDGE_UNAVAILABLE",
+            type_uri="https://acos.local/problems/ai-knowledge-unavailable",
+        )
+
+
 class ProviderUnexpectedError(PlatformError):
     def __init__(
         self,

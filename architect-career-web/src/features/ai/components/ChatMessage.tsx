@@ -1,4 +1,5 @@
-import { Box, IconButton, Paper, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Button, IconButton, Paper, Stack, Tooltip, Typography } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
@@ -11,6 +12,13 @@ import { useNotification } from '@/shared/hooks/useNotification';
 interface ChatMessageProps {
   message: ChatMessageModel;
   assistantLabel?: string;
+}
+
+export function labelFor(contentType: string): string {
+  if (contentType === 'CONCEPT') return 'Concept';
+  if (contentType === 'QUESTIONS_ANSWERS') return 'Questions & Answers';
+  if (contentType === 'NOTE') return 'Note';
+  return contentType;
 }
 
 export function ChatMessage({ message, assistantLabel = 'Assistant' }: ChatMessageProps) {
@@ -68,7 +76,36 @@ export function ChatMessage({ message, assistantLabel = 'Assistant' }: ChatMessa
               {message.content}
             </Typography>
           ) : (
-            <MarkdownViewer content={message.content} withSyntaxHighlight />
+            <Stack spacing={1.5}>
+              {message.grounded ? (
+                <Typography variant="caption" color="text.secondary">
+                  Based on your ACOS knowledge
+                </Typography>
+              ) : null}
+              <MarkdownViewer content={message.content} withSyntaxHighlight />
+              {message.sources && message.sources.length > 0 ? (
+                <Stack spacing={1}>
+                  <Typography variant="caption" color="text.secondary">
+                    Sources
+                  </Typography>
+                  {message.sources.map((source) => (
+                    <Paper key={source.chunkId || source.contentId} variant="outlined" sx={{ p: 1.25 }}>
+                      <Typography variant="subtitle2">{source.title}</Typography>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        {[source.path, labelFor(source.contentType), source.section]
+                          .filter(Boolean)
+                          .join(' / ')}
+                      </Typography>
+                      {source.url.startsWith('/') ? (
+                        <Button component={RouterLink} to={source.url} size="small" sx={{ mt: 0.5, px: 0 }}>
+                          Open source
+                        </Button>
+                      ) : null}
+                    </Paper>
+                  ))}
+                </Stack>
+              ) : null}
+            </Stack>
           )
         ) : null}
         <Box sx={{ mt: 0.5 }}>

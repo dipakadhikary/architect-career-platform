@@ -46,7 +46,9 @@ class AssistantAiControllerTest {
   @Test
   void shouldReturnNormalizedAnswerForAuthenticatedCaller() throws Exception {
     when(assistantAiGateway.ask(any()))
-        .thenReturn(new AssistantChatResponse("## Dependency Injection", "gpt-test", "openai"));
+        .thenReturn(
+            new AssistantChatResponse(
+                "## Dependency Injection", "gpt-test", "openai", false, java.util.List.of()));
 
     mockMvc
         .perform(

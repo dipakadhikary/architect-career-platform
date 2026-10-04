@@ -74,6 +74,47 @@ class PlatformMetrics:
             "Retry attempts during indexing",
             registry=self.registry,
         )
+        self.rag_requests = Counter(
+            "acos_ai_rag_requests_total",
+            "RAG answers by outcome",
+            ["outcome"],
+            registry=self.registry,
+        )
+        self.rag_retrieval_latency = Histogram(
+            "acos_ai_rag_retrieval_latency_seconds",
+            "Query embedding plus vector search latency",
+            registry=self.registry,
+        )
+        self.rag_embedding_latency = Histogram(
+            "acos_ai_rag_embedding_latency_seconds",
+            "Query embedding latency",
+            registry=self.registry,
+        )
+        self.rag_search_latency = Histogram(
+            "acos_ai_rag_search_latency_seconds",
+            "Vector search latency",
+            registry=self.registry,
+        )
+        self.rag_llm_latency = Histogram(
+            "acos_ai_rag_llm_latency_seconds",
+            "Grounded language-model latency",
+            registry=self.registry,
+        )
+        self.rag_retrieved_chunks = Histogram(
+            "acos_ai_rag_retrieved_chunks",
+            "Chunks returned after authorization filtering",
+            registry=self.registry,
+        )
+        self.rag_context_characters = Histogram(
+            "acos_ai_rag_context_characters",
+            "Characters placed in the RAG context",
+            registry=self.registry,
+        )
+        self.rag_sources = Histogram(
+            "acos_ai_rag_sources",
+            "Deduplicated sources returned with an answer",
+            registry=self.registry,
+        )
         self.http_latency = Histogram(
             "acos_ai_http_request_duration_seconds",
             "HTTP request latency in seconds",
