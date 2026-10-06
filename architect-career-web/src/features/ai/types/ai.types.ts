@@ -335,3 +335,21 @@ export const AI_ERROR_CODES = [
 ] as const;
 
 export type AiErrorCode = (typeof AI_ERROR_CODES)[number];
+
+export interface AgentStep {
+  stepId: string;
+  tool: string;
+  label: string;
+  status: string;
+}
+
+export interface AgentExecution {
+  executionId: string;
+  status: string;
+  answer: string;
+  errorCode: string;
+  sources: AssistantSource[];
+  steps: AgentStep[];
+  approvalRequired: boolean;
+  proposedAction: string;
+}

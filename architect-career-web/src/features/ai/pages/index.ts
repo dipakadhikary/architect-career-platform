@@ -1,3 +1,4 @@
+export { AgentAiPage } from './AgentAiPage';
 export { AskAiPage } from './AskAiPage';
 export { AiDashboardPage } from './AiDashboardPage';
 export { AiChatPage } from './AiChatPage';

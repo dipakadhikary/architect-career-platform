@@ -76,6 +76,8 @@ export function AiAuthoringPanel({ note, onSaved }: AiAuthoringPanelProps) {
         topic: note.title,
         instructions: nextInstructions,
         contentId: note.id,
+        difficulty: '',
+        useConversation: false,
         useKnowledge: true,
       });
       setProposal(created);

@@ -4,6 +4,7 @@ import { apiClient } from '@/shared/api/axios.instance';
 import { unwrapApiResponse } from '@/shared/api/unwrap';
 import type { ApiResponse } from '@/shared/api/types';
 import type {
+  AgentExecution,
   AssistantAskRequest,
   AssistantAskResponse,
   AuthoringProposal,
@@ -254,6 +255,33 @@ export const aiApi = {
     return unwrapApiResponse(response);
   },
 
+  async executeAgent(goal: string, conversationId?: string): Promise<AgentExecution> {
+    const response = await apiClient.post<ApiResponse<AgentExecution>>(
+      `${BASE}/agents/execute`,
+      { goal, conversationId: conversationId ?? null },
+      { timeout },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async decideAgent(executionId: string, decision: 'APPROVE' | 'REJECT'): Promise<AgentExecution> {
+    const response = await apiClient.post<ApiResponse<AgentExecution>>(
+      `${BASE}/agents/executions/${executionId}/decision`,
+      { decision },
+      { timeout },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async cancelAgent(executionId: string): Promise<AgentExecution> {
+    const response = await apiClient.post<ApiResponse<AgentExecution>>(
+      `${BASE}/agents/executions/${executionId}/cancel`,
+      {},
+      { timeout },
+    );
+    return unwrapApiResponse(response);
+  },
+
   async ask(payload: AssistantAskRequest): Promise<AssistantAskResponse> {
     const response = await apiClient.post<ApiResponse<AssistantAskResponse>>(
       `${BASE}/chat`,
@@ -264,11 +292,19 @@ export const aiApi = {
   },
 
   async chatCompletion(payload: ChatCompletionRequest): Promise<ChatCompletionResponse> {
-    const response = await apiClient.post<ApiResponse<ChatCompletionResponse>>(
-      `${BASE}/chat/completions`,
-      payload,
-      { timeout },
+    const history = (payload.history ?? []).filter(
+      (turn) => turn.content.trim().length > 0 && (turn.role === 'user' || turn.role === 'assistant'),
     );
-    return unwrapApiResponse(response);
+    const last = history[history.length - 1];
+    const messages =
+      last?.role === 'user' && last.content === payload.message
+        ? history
+        : [...history, { role: 'user' as const, content: payload.message }];
+    const answer = await this.ask({ messages });
+    return {
+      conversationId: payload.conversationId ?? '',
+      message: answer.answer,
+      model: answer.model,
+    };
   },
 };

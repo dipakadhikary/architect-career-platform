@@ -1,6 +1,9 @@
 package com.acos.integration.gateway;
 
 import com.acos.integration.client.AssistantAiClient;
+import com.acos.integration.dto.AgentDecisionRequest;
+import com.acos.integration.dto.AgentExecuteRequest;
+import com.acos.integration.dto.AgentExecutionResponse;
 import com.acos.integration.dto.AssistantChatRequest;
 import com.acos.integration.dto.AssistantChatResponse;
 import com.acos.integration.dto.AssistantConversationDetailResponse;
@@ -154,6 +157,70 @@ public class AssistantAiGateway {
         "conversation-message",
         "/api/v1/ai/conversations/{id}/messages",
         () -> requireClient().sendMessage(conversationId, request, idempotencyKey),
+        AssistantAiGateway::disabled);
+  }
+
+  /**
+   * Runs a controlled agent goal.
+   *
+   * @param request goal
+   * @return execution
+   */
+  public AgentExecutionResponse executeAgent(AgentExecuteRequest request) {
+    Objects.requireNonNull(request, "request must not be null");
+    return invoker.execute(
+        FEATURE,
+        "agent-execute",
+        "/api/v1/ai/agents/execute",
+        () -> requireClient().executeAgent(request),
+        AssistantAiGateway::disabled);
+  }
+
+  /**
+   * Loads one owned execution.
+   *
+   * @param executionId execution id
+   * @return execution
+   */
+  public AgentExecutionResponse getAgentExecution(String executionId) {
+    return invoker.execute(
+        FEATURE,
+        "agent-get",
+        "/api/v1/ai/agents/executions/{id}",
+        () -> requireClient().getAgentExecution(executionId),
+        AssistantAiGateway::disabled);
+  }
+
+  /**
+   * Cancels an execution before the next tool call.
+   *
+   * @param executionId execution id
+   * @return execution
+   */
+  public AgentExecutionResponse cancelAgentExecution(String executionId) {
+    return invoker.execute(
+        FEATURE,
+        "agent-cancel",
+        "/api/v1/ai/agents/executions/{id}/cancel",
+        () -> requireClient().cancelAgentExecution(executionId),
+        AssistantAiGateway::disabled);
+  }
+
+  /**
+   * Approves or rejects a proposed action.
+   *
+   * @param executionId execution id
+   * @param request decision
+   * @return execution
+   */
+  public AgentExecutionResponse decideAgentExecution(
+      String executionId, AgentDecisionRequest request) {
+    Objects.requireNonNull(request, "request must not be null");
+    return invoker.execute(
+        FEATURE,
+        "agent-decision",
+        "/api/v1/ai/agents/executions/{id}/decision",
+        () -> requireClient().decideAgentExecution(executionId, request),
         AssistantAiGateway::disabled);
   }
 

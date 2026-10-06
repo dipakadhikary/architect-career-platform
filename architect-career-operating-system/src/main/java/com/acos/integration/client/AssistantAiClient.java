@@ -1,6 +1,9 @@
 package com.acos.integration.client;
 
 import com.acos.integration.config.AiPlatformFeignConfiguration;
+import com.acos.integration.dto.AgentDecisionRequest;
+import com.acos.integration.dto.AgentExecuteRequest;
+import com.acos.integration.dto.AgentExecutionResponse;
 import com.acos.integration.dto.AssistantChatRequest;
 import com.acos.integration.dto.AssistantChatResponse;
 import com.acos.integration.dto.AssistantConversationDetailResponse;
@@ -187,4 +190,52 @@ public interface AssistantAiClient {
       value = "/api/v1/ai/authoring/proposals/{proposalId}/reject",
       produces = MediaType.APPLICATION_JSON_VALUE)
   AuthoringProposalResponse rejectProposal(@PathVariable("proposalId") String proposalId);
+
+  /**
+   * Runs a controlled agent goal for the forwarded caller.
+   *
+   * @param request goal
+   * @return execution
+   */
+  @PostMapping(
+      value = "/api/v1/ai/agents/execute",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  AgentExecutionResponse executeAgent(@RequestBody AgentExecuteRequest request);
+
+  /**
+   * Loads one execution owned by the forwarded caller.
+   *
+   * @param executionId execution id
+   * @return execution
+   */
+  @GetMapping(
+      value = "/api/v1/ai/agents/executions/{executionId}",
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  AgentExecutionResponse getAgentExecution(@PathVariable("executionId") String executionId);
+
+  /**
+   * Cancels an execution before the next tool call.
+   *
+   * @param executionId execution id
+   * @return execution
+   */
+  @PostMapping(
+      value = "/api/v1/ai/agents/executions/{executionId}/cancel",
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  AgentExecutionResponse cancelAgentExecution(@PathVariable("executionId") String executionId);
+
+  /**
+   * Approves or rejects a proposed action. The Python service does not run high-risk tools.
+   *
+   * @param executionId execution id
+   * @param request decision
+   * @return execution
+   */
+  @PostMapping(
+      value = "/api/v1/ai/agents/executions/{executionId}/decision",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  AgentExecutionResponse decideAgentExecution(
+      @PathVariable("executionId") String executionId, @RequestBody AgentDecisionRequest request);
 }

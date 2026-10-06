@@ -6,6 +6,7 @@ import { AiUnavailableBanner } from '../components/AiUnavailableBanner';
 const NAV_ITEMS = [
   { label: 'Dashboard', path: '/ai' },
   { label: 'Ask ACOS AI', path: '/ai/ask' },
+  { label: 'Analyze with AI', path: '/ai/agent' },
   { label: 'Chat', path: '/ai/chat' },
   { label: 'Knowledge', path: '/ai/knowledge' },
   { label: 'Learning', path: '/ai/learning' },

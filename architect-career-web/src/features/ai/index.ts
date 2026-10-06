@@ -1,5 +1,6 @@
 export { AiShell } from '@/features/ai/layouts/AiShell';
 export {
+  AgentAiPage,
   AskAiPage,
   AiDashboardPage,
   AiChatPage,

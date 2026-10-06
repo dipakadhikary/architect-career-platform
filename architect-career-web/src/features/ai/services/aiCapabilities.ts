@@ -164,7 +164,7 @@ export const AI_CAPABILITIES: readonly AiCapabilityDefinition[] = [
     title: 'AI Chat Assistant',
     description: 'Conversational assistance across ACOS domains.',
     lifecycle: 'planned',
-    path: '/chat/completions',
+    path: '/chat',
   },
 ] as const;
 
