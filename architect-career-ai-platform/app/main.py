@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
 from app.api.exceptions import register_exception_handlers
+from app.api.middleware.gzip_request import GzipRequestMiddleware
 from app.api.middleware.rate_limit import RateLimitMiddleware
 from app.api.middleware.request_context import RequestContextMiddleware
 from app.api.router import api_router
@@ -57,6 +58,8 @@ def create_app() -> FastAPI:
     )
     application.add_middleware(RequestContextMiddleware)
     application.add_middleware(RateLimitMiddleware, settings=settings)
+    # Outermost: Feign gzips JSON over the minimum size before this app reads it.
+    application.add_middleware(GzipRequestMiddleware)
     register_exception_handlers(application)
     application.include_router(api_router)
     return application

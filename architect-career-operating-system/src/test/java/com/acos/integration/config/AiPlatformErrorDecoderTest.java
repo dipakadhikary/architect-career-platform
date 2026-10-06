@@ -31,6 +31,27 @@ class AiPlatformErrorDecoderTest {
     assertThat(decoder.decode("m", response(504))).isInstanceOf(AiTimeoutException.class);
   }
 
+  @Test
+  void shouldIncludeTheProblemFieldsInTheMessage() {
+    Response response =
+        response(400)
+            .toBuilder()
+            .body(
+                """
+                {"detail":"Request validation failed","errors":[
+                  {"field":"body.difficulty","message":"Input should be a valid string"}
+                ]}
+                """,
+                StandardCharsets.UTF_8)
+            .build();
+
+    Exception decoded = decoder.decode("AssistantAiClient#generateProposal()", response);
+
+    assertThat(decoded)
+        .isInstanceOf(AiValidationException.class)
+        .hasMessageContaining("body.difficulty Input should be a valid string");
+  }
+
   private static Response response(int status) {
     return Response.builder()
         .status(status)
