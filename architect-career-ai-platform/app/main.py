@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
 from app.api.exceptions import register_exception_handlers
-from app.api.middleware.gzip_request import GzipRequestMiddleware
+from app.api.middleware import GzipRequestMiddleware
 from app.api.middleware.rate_limit import RateLimitMiddleware
 from app.api.middleware.request_context import RequestContextMiddleware
 from app.api.router import api_router
