@@ -17,7 +17,20 @@ COPY app ./app
 
 RUN pip install --upgrade pip \
     && pip install . \
-    && python -c "import pathlib, shutil, app; shutil.copytree(pathlib.Path('app'), pathlib.Path(app.__file__).resolve().parent, dirs_exist_ok=True, ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))" \
+    && python - <<'PY'
+import pathlib
+import shutil
+import site
+
+source = pathlib.Path("app").resolve()
+destination = pathlib.Path(site.getsitepackages()[0], "app")
+shutil.copytree(
+    source,
+    destination,
+    dirs_exist_ok=True,
+    ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+)
+PY
     && rm -rf app \
     && useradd --create-home --uid 10001 --shell /usr/sbin/nologin acos \
     && chown -R acos:acos ${APP_HOME}
