@@ -10,8 +10,8 @@ services:
         VITE_AI_PLATFORM_ENABLED: ${VITE_AI_PLATFORM_ENABLED:-true}
     ports:
       - "${WEB_PORT:-5173}:80"
-    environment:
-      API_UPSTREAM: ${API_UPSTREAM:-http://host.docker.internal:8080}
+    env_file:
+      - .env
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
