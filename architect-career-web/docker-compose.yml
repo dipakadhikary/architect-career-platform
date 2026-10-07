@@ -8,6 +8,7 @@ services:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
         VITE_ENABLE_QUERY_DEVTOOLS: ${VITE_ENABLE_QUERY_DEVTOOLS:-false}
         VITE_AI_PLATFORM_ENABLED: ${VITE_AI_PLATFORM_ENABLED:-true}
+    image: acos-web
     ports:
       - "${WEB_PORT:-5173}:80"
     env_file:

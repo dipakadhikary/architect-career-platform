@@ -1,6 +1,7 @@
 services:
   ai-platform:
-    build: .
+#    build: .
+    image: acos-ai
     ports:
       - "8090:8090"
     env_file:
