@@ -1,5 +1,6 @@
 package com.acos.auth.config;
 
+import com.acos.auth.recovery.AccountRecoveryProperties;
 import com.acos.auth.token.JwtProperties;
 import java.time.Clock;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -8,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 /** Enables JWT configuration properties binding and shared time source. */
 @Configuration
-@EnableConfigurationProperties(JwtProperties.class)
+@EnableConfigurationProperties({JwtProperties.class, AccountRecoveryProperties.class})
 public class JwtConfiguration {
 
   /**

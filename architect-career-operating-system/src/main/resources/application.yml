@@ -131,6 +131,11 @@ acos:
     issuer: ${ACOS_JWT_ISSUER:acos-platform}
     access-token-ttl: ${ACOS_JWT_ACCESS_TTL:15m}
     refresh-token-ttl: ${ACOS_JWT_REFRESH_TTL:7d}
+  recovery:
+    token-ttl: ${ACOS_RECOVERY_TOKEN_TTL:30m}
+    frontend-base-url: ${ACOS_FRONTEND_BASE_URL:http://localhost:5173}
+    max-requests-per-hour: ${ACOS_RECOVERY_MAX_PER_HOUR:5}
+    min-interval: ${ACOS_RECOVERY_MIN_INTERVAL:60s}
   dashboard:
     welcome-message-prefix: "Welcome to ACOS, "
     profile-completion: 45

@@ -8,6 +8,15 @@ import { lazyNamed, withSuspense } from '@/app/router/lazyRoute';
 
 const LoginPage = lazyNamed(() => import('@/pages/auth/LoginPage'), 'LoginPage');
 const RegisterPage = lazyNamed(() => import('@/pages/auth/RegisterPage'), 'RegisterPage');
+const ForgotUserIdPage = lazyNamed(() => import('@/pages/auth/ForgotUserIdPage'), 'ForgotUserIdPage');
+const ForgotPasswordPage = lazyNamed(
+  () => import('@/pages/auth/ForgotPasswordPage'),
+  'ForgotPasswordPage',
+);
+const ResetPasswordPage = lazyNamed(
+  () => import('@/pages/auth/ResetPasswordPage'),
+  'ResetPasswordPage',
+);
 const UnauthorizedPage = lazyNamed(() => import('@/pages/UnauthorizedPage'), 'UnauthorizedPage');
 const NotFoundPage = lazyNamed(() => import('@/pages/NotFoundPage'), 'NotFoundPage');
 const ServerErrorPage = lazyNamed(() => import('@/pages/ServerErrorPage'), 'ServerErrorPage');
@@ -72,6 +81,10 @@ export const appRoutes: RouteObject[] = [
     errorElement: withSuspense(<ServerErrorPage />),
     children: [
       {
+        element: <AuthLayout />,
+        children: [{ path: '/reset-password', element: withSuspense(<ResetPasswordPage />) }],
+      },
+      {
         element: <GuestRoute />,
         children: [
           {
@@ -79,6 +92,8 @@ export const appRoutes: RouteObject[] = [
             children: [
               { path: '/login', element: withSuspense(<LoginPage />) },
               { path: '/register', element: withSuspense(<RegisterPage />) },
+              { path: '/forgot-user-id', element: withSuspense(<ForgotUserIdPage />) },
+              { path: '/forgot-password', element: withSuspense(<ForgotPasswordPage />) },
             ],
           },
         ],

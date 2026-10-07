@@ -110,6 +110,13 @@ After a knowledge note is created/updated, a domain event is published after com
 listener calls `KnowledgeAiFacade.indexKnowledge`. AI failures never roll back the business
 transaction.
 
+### Account recovery
+
+Login identifier is the account email. `POST /api/v1/auth/forgot-user-id` and
+`POST /api/v1/auth/forgot-password` return the same acknowledgement whether or not the address is
+registered. Password reset tokens are stored as SHA-256 hashes. See
+[docs/account-recovery.md](docs/account-recovery.md).
+
 ### OpenAPI
 
 SpringDoc scans `com.acos`. AI health is documented under tag **AI Integration**. Swagger UI:

@@ -96,6 +96,12 @@ public class SecurityConfiguration {
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh")
                     .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/auth/forgot-user-id")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/auth/forgot-password")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/v1/auth/reset-password")
+                    .permitAll()
                     .requestMatchers(
                         "/v3/api-docs/**",
                         "/swagger-ui/**",

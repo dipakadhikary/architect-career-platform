@@ -73,6 +73,14 @@ export function LoginPage() {
         <Button type="submit" variant="contained" size="large" disabled={submitting}>
           {submitting ? 'Signing in…' : 'Sign in'}
         </Button>
+        <Stack direction="row" spacing={2} justifyContent="space-between">
+          <Link component={RouterLink} to={appConfig.routes.forgotUserId} underline="hover">
+            Forgot user ID
+          </Link>
+          <Link component={RouterLink} to={appConfig.routes.forgotPassword} underline="hover">
+            Forgot password
+          </Link>
+        </Stack>
         <Alert severity="info" variant="outlined">
           New here?{' '}
           <Link component={RouterLink} to={appConfig.routes.register} underline="hover">

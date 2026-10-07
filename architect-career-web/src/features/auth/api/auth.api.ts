@@ -48,4 +48,29 @@ export const authApi = {
     const response = await apiClient.get<ApiResponse<AuthUser>>(`${AUTH_BASE}/me`);
     return unwrapApiResponse(response);
   },
+
+  async forgotUserId(email: string): Promise<{ message: string }> {
+    const response = await apiClient.post<ApiResponse<{ message: string }>>(
+      `${AUTH_BASE}/forgot-user-id`,
+      { email },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const response = await apiClient.post<ApiResponse<{ message: string }>>(
+      `${AUTH_BASE}/forgot-password`,
+      { email },
+    );
+    return unwrapApiResponse(response);
+  },
+
+  async resetPassword(payload: {
+    token: string;
+    newPassword: string;
+    confirmPassword: string;
+  }): Promise<void> {
+    const response = await apiClient.post<ApiResponse<null>>(`${AUTH_BASE}/reset-password`, payload);
+    assertApiSuccess(response);
+  },
 };
