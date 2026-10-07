@@ -3,17 +3,10 @@ services:
     image: acos-platform
     ports:
       - "${ACOS_HTTP_PORT:-8080}:8080"
+    env_file:
+      - .env
     environment:
       SPRING_PROFILES_ACTIVE: local
-      ACOS_DB_HOST: postgres
-      ACOS_DB_PORT: 5432
-      ACOS_DB_NAME: ${ACOS_DB_NAME:-acos}
-      ACOS_DB_USER: ${ACOS_DB_USER:-acos}
-      ACOS_DB_PASSWORD: ${ACOS_DB_PASSWORD:-acos}
-      AI_PLATFORM_ENABLED: ${AI_PLATFORM_ENABLED:-true}
-      AI_PLATFORM_BASE_URL: ${AI_PLATFORM_BASE_URL:-http://host.docker.internal:8090}
-      ACOS_JWT_SECRET: ${ACOS_JWT_SECRET:-change-me-to-a-secure-secret-key-at-least-32-chars}
-      ACOS_JWT_ISSUER: ${ACOS_JWT_ISSUER:-acos-platform}
     extra_hosts:
       - "host.docker.internal:host-gateway"
 #    depends_on:
