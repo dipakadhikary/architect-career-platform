@@ -9,7 +9,25 @@ from jose import JWTError, jwt
 
 from app.shared.config.settings import AppSettings
 from app.shared.exceptions import AuthenticationError
-from app.shared.security.jwt_algorithms import hmac_algorithms_for_secret
+
+_HS384_BITS = 384
+_HS512_BITS = 512
+
+
+def hmac_algorithms_for_secret(secret: str, configured: str) -> list[str]:
+    """Return the configured algorithm and the one jjwt would select for this secret."""
+    bit_length = len(secret.encode("utf-8")) * 8
+    if bit_length >= _HS512_BITS:
+        detected = "HS512"
+    elif bit_length >= _HS384_BITS:
+        detected = "HS384"
+    else:
+        detected = "HS256"
+    algorithms: list[str] = []
+    for name in (configured, detected):
+        if name and name not in algorithms:
+            algorithms.append(name)
+    return algorithms
 
 
 @dataclass(slots=True, frozen=True)

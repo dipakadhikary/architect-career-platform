@@ -11,7 +11,7 @@ from jose import JWTError, jwt
 from app.intelligence.assistant.models import CallerContext
 from app.shared.config.settings import AppSettings
 from app.shared.exceptions import AuthenticationError
-from app.shared.security.jwt_algorithms import hmac_algorithms_for_secret
+from app.shared.security.authentication import hmac_algorithms_for_secret
 
 
 def resolve_caller(

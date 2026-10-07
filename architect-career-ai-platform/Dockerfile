@@ -15,22 +15,25 @@ COPY pyproject.toml README.md ./
 COPY third_party/acos_ai_contracts ./third_party/acos_ai_contracts
 COPY app ./app
 
-RUN pip install --upgrade pip \
+RUN missing="" \
+    && for file in \
+      app/api/v1/authoring.py \
+      app/api/v1/conversations.py \
+      app/orchestration/authoring/service.py \
+      app/orchestration/conversation/service.py \
+      app/orchestration/rag/hybrid.py \
+      app/orchestration/rag/lexical.py \
+      app/orchestration/rag/rerank.py; do \
+      if [ ! -f "$file" ]; then missing="$missing $file"; fi; \
+    done \
+    && if [ -n "$missing" ]; then \
+      echo "Docker build context is missing:$missing"; \
+      echo "Build from the project directory that contains these files. Git does not include them."; \
+      exit 1; \
+    fi \
+    && pip install --upgrade pip \
     && pip install . \
-    && python - <<'PY'
-import pathlib
-import shutil
-import site
-
-source = pathlib.Path("app").resolve()
-destination = pathlib.Path(site.getsitepackages()[0], "app")
-shutil.copytree(
-    source,
-    destination,
-    dirs_exist_ok=True,
-    ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
-)
-PY
+    && python -c 'import pathlib, shutil, site; shutil.copytree(pathlib.Path("app"), pathlib.Path(site.getsitepackages()[0], "app"), dirs_exist_ok=True, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))' \
     && rm -rf app \
     && useradd --create-home --uid 10001 --shell /usr/sbin/nologin acos \
     && chown -R acos:acos ${APP_HOME}
