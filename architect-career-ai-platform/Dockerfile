@@ -17,6 +17,7 @@ COPY app ./app
 
 RUN pip install --upgrade pip \
     && pip install . \
+    && rm -rf app \
     && useradd --create-home --uid 10001 --shell /usr/sbin/nologin acos \
     && chown -R acos:acos ${APP_HOME}
 

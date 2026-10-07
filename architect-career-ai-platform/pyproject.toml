@@ -60,6 +60,10 @@ acos-ai-platform = "app.main:run"
 [tool.hatch.metadata]
 allow-direct-references = true
 
+[tool.hatch.build]
+# The platform directory is gitignored, so VCS filtering would omit new modules.
+ignore-vcs = true
+
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
 
