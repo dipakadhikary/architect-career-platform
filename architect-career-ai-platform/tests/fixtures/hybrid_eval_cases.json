@@ -1,0 +1,66 @@
+[
+  {
+    "case_id": "keyword",
+    "question": "transactional outbox",
+    "kind": "keyword",
+    "expected_content_ids": ["outbox-concept"],
+    "expected_urls": ["/tutorials/outbox/concept"],
+    "expected_grounded": true
+  },
+  {
+    "case_id": "identifier",
+    "question": "KafkaConsumer",
+    "kind": "identifier",
+    "expected_content_ids": ["kafka-consumer"],
+    "expected_urls": ["/tutorials/kafka/concept"],
+    "expected_grounded": true
+  },
+  {
+    "case_id": "semantic",
+    "question": "How are failures isolated in a service?",
+    "kind": "semantic",
+    "expected_content_ids": ["bulkhead-concept"],
+    "expected_urls": ["/tutorials/bulkhead/concept"],
+    "expected_grounded": true
+  },
+  {
+    "case_id": "qa",
+    "question": "What is a bulkhead?",
+    "kind": "qa",
+    "expected_content_ids": ["bulkhead-qa"],
+    "expected_urls": ["/tutorials/bulkhead/questions"],
+    "expected_grounded": true
+  },
+  {
+    "case_id": "concept",
+    "question": "Bulkhead pattern",
+    "kind": "concept",
+    "expected_content_ids": ["bulkhead-concept"],
+    "expected_urls": ["/tutorials/bulkhead/concept"],
+    "expected_grounded": true
+  },
+  {
+    "case_id": "mixed",
+    "question": "OpenFeign HTTP/2 connections",
+    "kind": "mixed",
+    "expected_content_ids": ["openfeign"],
+    "expected_urls": ["/tutorials/openfeign/concept"],
+    "expected_grounded": true
+  },
+  {
+    "case_id": "ambiguous",
+    "question": "gateway",
+    "kind": "ambiguous",
+    "expected_content_ids": ["gateway"],
+    "expected_urls": ["/tutorials/gateway/concept"],
+    "expected_grounded": true
+  },
+  {
+    "case_id": "none",
+    "question": "unrelated payroll process",
+    "kind": "none",
+    "expected_content_ids": [],
+    "expected_urls": [],
+    "expected_grounded": false
+  }
+]
