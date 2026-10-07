@@ -11,12 +11,11 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY third_party/acos_ai_contracts /tmp/acos_ai_contracts
 COPY pyproject.toml README.md ./
+COPY third_party/acos_ai_contracts ./third_party/acos_ai_contracts
 COPY app ./app
 
 RUN pip install --upgrade pip \
-    && pip install /tmp/acos_ai_contracts \
     && pip install . \
     && useradd --create-home --uid 10001 --shell /usr/sbin/nologin acos \
     && chown -R acos:acos ${APP_HOME}
