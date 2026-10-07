@@ -16,7 +16,7 @@ from app.orchestration.rag.rerank import RagReranker
 from app.shared.config.settings import AppSettings
 from app.shared.logging.setup import get_logger
 from app.shared.observability.metrics import PlatformMetrics
-ggsdfsdf
+
 logger = get_logger(__name__)
 _tracer = get_tracer("acos.ai.rag")
 
