@@ -34,6 +34,7 @@ export const appConfig = {
     forgotUserId: '/forgot-user-id',
     forgotPassword: '/forgot-password',
     resetPassword: '/reset-password',
+    messageTemplates: '/notifications/templates',
     home: '/',
     unauthorized: '/unauthorized',
   },

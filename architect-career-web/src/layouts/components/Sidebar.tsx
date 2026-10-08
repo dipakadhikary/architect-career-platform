@@ -20,6 +20,7 @@ import WorkOutlineIcon from '@mui/icons-material/WorkOutlineOutlined';
 import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import MenuBookIcon from '@mui/icons-material/AutoStoriesOutlined';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -42,6 +43,7 @@ const defaultNavItems: NavItem[] = [
   { label: 'Knowledge', path: '/knowledge', icon: <MenuBookOutlinedIcon /> },
   { label: 'Tutorials', path: '/tutorials', icon: <MenuBookIcon /> },
   { label: 'AI', path: '/ai', icon: <AutoAwesomeOutlinedIcon /> },
+  { label: 'Messages', path: '/notifications/templates', icon: <MailOutlineIcon /> },
 ];
 
 interface SidebarProps {

@@ -7,6 +7,10 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: local
+      ACOS_EMAIL_PROVIDER: ${ACOS_EMAIL_PROVIDER:-aws}
+      ACOS_EMAIL_FROM: ${ACOS_EMAIL_FROM:-}
+      ACOS_AWS_REGION: ${ACOS_AWS_REGION:-us-east-1}
+      ACOS_SMS_PROVIDER: ${ACOS_SMS_PROVIDER:-console}
     extra_hosts:
       - "host.docker.internal:host-gateway"
 #    depends_on:

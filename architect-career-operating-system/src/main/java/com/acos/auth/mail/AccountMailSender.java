@@ -1,6 +1,9 @@
 package com.acos.auth.mail;
 
-/** Sends account-recovery messages. Implementations must not log message bodies. */
+/**
+ * Sends account-recovery messages through the notification module. The reset URL is printed only
+ * when the configured email provider cannot deliver.
+ */
 public interface AccountMailSender {
 
   /**

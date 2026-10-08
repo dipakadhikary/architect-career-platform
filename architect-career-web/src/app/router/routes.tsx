@@ -74,6 +74,10 @@ const KnowledgeAiPage = lazyNamed(() => import('@/features/ai'), 'KnowledgeAiPag
 const LearningAiPage = lazyNamed(() => import('@/features/ai'), 'LearningAiPage');
 const CareerAiPage = lazyNamed(() => import('@/features/ai'), 'CareerAiPage');
 const PortfolioAiPage = lazyNamed(() => import('@/features/ai'), 'PortfolioAiPage');
+const TemplateDesignerPage = lazyNamed(
+  () => import('@/features/notifications/pages/TemplateDesignerPage'),
+  'TemplateDesignerPage',
+);
 
 export const appRoutes: RouteObject[] = [
   {
@@ -160,6 +164,10 @@ export const appRoutes: RouteObject[] = [
                   { path: 'career', element: withSuspense(<CareerAiPage />) },
                   { path: 'portfolio', element: withSuspense(<PortfolioAiPage />) },
                 ],
+              },
+              {
+                path: 'notifications/templates',
+                element: withSuspense(<TemplateDesignerPage />),
               },
               { path: 'unauthorized', element: withSuspense(<UnauthorizedPage />) },
               { path: 'forbidden', element: withSuspense(<ForbiddenPage />) },

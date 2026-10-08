@@ -136,6 +136,13 @@ acos:
     frontend-base-url: ${ACOS_FRONTEND_BASE_URL:http://localhost:5173}
     max-requests-per-hour: ${ACOS_RECOVERY_MAX_PER_HOUR:5}
     min-interval: ${ACOS_RECOVERY_MIN_INTERVAL:60s}
+  notification:
+    email:
+      provider: ${ACOS_EMAIL_PROVIDER:aws}
+      from-address: ${ACOS_EMAIL_FROM:}
+      region: ${ACOS_AWS_REGION:us-east-1}
+    sms:
+      provider: ${ACOS_SMS_PROVIDER:console}
   dashboard:
     welcome-message-prefix: "Welcome to ACOS, "
     profile-completion: 45

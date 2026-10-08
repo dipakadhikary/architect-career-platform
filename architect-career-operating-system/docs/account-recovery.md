@@ -107,10 +107,12 @@ hygiene only.
 
 ## Email
 
-The platform has no SMTP integration. `LoggingAccountMailSender` records that a message was
-accepted and does not log the address, identifier, or reset URL. A mail failure still returns the
-generic acknowledgement. The token row remains so a later delivery mechanism can be added without
-changing the public contract.
+Recovery calls `NotificationPort` with the `LOGIN_IDENTIFIER` or `PASSWORD_RESET` email template.
+Those designs live in `acos.message_templates` and can be edited at `/notifications/templates`.
+The email provider is `acos.notification.email.provider` (`aws` by default). When SES is not
+configured or the send fails, the rendered message, including the reset URL, is printed to the
+console. A successful SES send does not print that URL. See
+[notifications.md](notifications.md).
 
 ## Rate limiting
 
