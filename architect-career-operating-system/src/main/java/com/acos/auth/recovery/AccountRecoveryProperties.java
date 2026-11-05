@@ -43,7 +43,8 @@ public record AccountRecoveryProperties(
       URI origin = URI.create(frontendBaseUrl);
       String scheme = origin.getScheme();
       if ((!"http".equals(scheme) && !"https".equals(scheme)) || origin.getUserInfo() != null) {
-        throw new IllegalArgumentException("acos.recovery.frontend-base-url must be an http(s) origin");
+        throw new IllegalArgumentException(
+            "acos.recovery.frontend-base-url must be an http(s) origin");
       }
     }
   }

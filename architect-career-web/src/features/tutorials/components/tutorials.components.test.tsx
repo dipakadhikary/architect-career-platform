@@ -225,6 +225,48 @@ describe('TutorialSidebarTree', () => {
     );
   });
 
+  it('keeps a branch collapsed after manual toggle while on a descendant route', async () => {
+    const user = userEvent.setup();
+    const tree: TutorialTreeNode[] = [
+      {
+        id: '1',
+        title: 'Java',
+        slug: 'java',
+        path: 'java',
+        sortOrder: 0,
+        hasConcept: false,
+        hasQuestions: false,
+        children: [
+          {
+            id: '2',
+            title: 'Collections',
+            slug: 'collections',
+            path: 'java/collections',
+            sortOrder: 0,
+            hasConcept: true,
+            hasQuestions: false,
+            children: [],
+          },
+        ],
+      },
+    ];
+    mockedUseTutorialTreeQuery.mockReturnValue({
+      data: tree,
+      isLoading: false,
+      isError: false,
+    } as unknown as ReturnType<typeof useTutorialTreeQuery>);
+
+    renderWithProviders(<TutorialSidebarTree />, ['/tutorials/java/collections/concept']);
+    expect(screen.getByText('Collections')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Collapse' }));
+    expect(screen.queryByText('Collections')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Expand' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+  });
+
   it('shows empty state when no tutorials exist', () => {
     mockedUseTutorialTreeQuery.mockReturnValue({
       data: [],

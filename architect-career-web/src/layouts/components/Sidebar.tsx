@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Collapse,
   Divider,
   Drawer,
+  IconButton,
   List,
   ListItemButton,
   ListItemIcon,
@@ -59,6 +60,10 @@ function prefetchRoute(path: string) {
   }
 }
 
+function isTutorialsPath(pathname: string): boolean {
+  return pathname === '/tutorials' || pathname.startsWith('/tutorials/');
+}
+
 function SidebarContent({
   navItems,
   onNavigate,
@@ -67,8 +72,15 @@ function SidebarContent({
   onNavigate?: () => void;
 }) {
   const location = useLocation();
-  const tutorialsActive = location.pathname === '/tutorials' || location.pathname.startsWith('/tutorials/');
+  const tutorialsActive = isTutorialsPath(location.pathname);
   const [tutorialsOpen, setTutorialsOpen] = useState(tutorialsActive);
+
+  // Open when entering / navigating within Tutorials; still allow manual collapse on the same route.
+  useEffect(() => {
+    if (isTutorialsPath(location.pathname)) {
+      setTutorialsOpen(true);
+    }
+  }, [location.pathname]);
 
   return (
     <Box
@@ -108,50 +120,45 @@ function SidebarContent({
           if (item.path === '/tutorials') {
             return (
               <Box key={item.path}>
-                <ListItemButton
-                  component={NavLink}
-                  to={item.path}
-                  onClick={() => {
-                    setTutorialsOpen(true);
-                    onNavigate?.();
-                  }}
-                  onMouseEnter={() => prefetchRoute(item.path)}
-                  onFocus={() => prefetchRoute(item.path)}
-                  sx={{
-                    borderRadius: 2,
-                    mb: 0.5,
-                    '&.active': {
-                      bgcolor: 'action.selected',
-                      color: 'primary.main',
-                      '& .MuiListItemIcon-root': { color: 'primary.main' },
-                    },
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.label} />
-                  <Box
-                    component="span"
-                    role="button"
-                    tabIndex={0}
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5, gap: 0.25 }}>
+                  <ListItemButton
+                    component={NavLink}
+                    to={item.path}
+                    onClick={() => {
+                      setTutorialsOpen(true);
+                      onNavigate?.();
+                    }}
+                    onMouseEnter={() => prefetchRoute(item.path)}
+                    onFocus={() => prefetchRoute(item.path)}
+                    sx={{
+                      flex: 1,
+                      minWidth: 0,
+                      borderRadius: 2,
+                      color: 'primary.dark',
+                      '&.active': {
+                        bgcolor: 'action.selected',
+                        color: 'primary.main',
+                        '& .MuiListItemIcon-root': { color: 'primary.main' },
+                      },
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 40, color: 'primary.main' }}>{item.icon}</ListItemIcon>
+                    <ListItemText
+                      primary={item.label}
+                      primaryTypographyProps={{ fontWeight: 700 }}
+                    />
+                  </ListItemButton>
+                  <IconButton
+                    size="small"
                     aria-label={tutorialsOpen ? 'Collapse Tutorials' : 'Expand Tutorials'}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      setTutorialsOpen((value) => !value);
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        setTutorialsOpen((value) => !value);
-                      }
-                    }}
-                    sx={{ display: 'inline-flex', alignItems: 'center' }}
+                    aria-expanded={tutorialsOpen}
+                    onClick={() => setTutorialsOpen((value) => !value)}
+                    sx={{ color: 'primary.main', flexShrink: 0 }}
                   >
                     {tutorialsOpen ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-                  </Box>
-                </ListItemButton>
-                <Collapse in={tutorialsOpen || tutorialsActive} timeout="auto" unmountOnExit>
+                  </IconButton>
+                </Box>
+                <Collapse in={tutorialsOpen} timeout="auto" unmountOnExit>
                   <TutorialSidebarTree onNavigate={onNavigate} />
                 </Collapse>
               </Box>

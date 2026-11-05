@@ -34,8 +34,7 @@ class AiPlatformErrorDecoderTest {
   @Test
   void shouldIncludeTheProblemFieldsInTheMessage() {
     Response response =
-        response(400)
-            .toBuilder()
+        response(400).toBuilder()
             .body(
                 """
                 {"detail":"Request validation failed","errors":[

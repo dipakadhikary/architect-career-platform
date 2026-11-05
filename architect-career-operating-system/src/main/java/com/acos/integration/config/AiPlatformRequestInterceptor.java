@@ -2,21 +2,21 @@ package com.acos.integration.config;
 
 import com.acos.auth.security.AcosUserDetails;
 import com.acos.common.logging.CorrelationIdFilter;
+import com.acos.integration.support.AiPlatformOutboundContext;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.UUID;
 import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * Propagates outbound AI Platform headers from the current security and request context. Does not
  * log or expose token contents.
+ *
+ * <p>Prefers {@link AiPlatformOutboundContext} snapshots so async / retry Feign calls never read a
+ * recycled servlet request.
  */
 public class AiPlatformRequestInterceptor implements RequestInterceptor {
 
@@ -51,13 +51,14 @@ public class AiPlatformRequestInterceptor implements RequestInterceptor {
 
   @Override
   public void apply(RequestTemplate template) {
+    AiPlatformOutboundContext.Snapshot snapshot = resolveSnapshot();
     template.header("Accept", "application/json");
     applyApiKey(template);
     applyCorrelationId(template);
-    template.header(HEADER_REQUEST_ID, resolveRequestId());
-    applyOptionalHeader(template, HEADER_TRACE_ID, resolveTraceId());
+    template.header(HEADER_REQUEST_ID, resolveRequestId(snapshot));
+    applyOptionalHeader(template, HEADER_TRACE_ID, snapshot.traceId());
     applyUserId(template);
-    applyOptionalHeader(template, HttpHeaders.AUTHORIZATION, resolveAuthorizationHeader());
+    applyOptionalHeader(template, HttpHeaders.AUTHORIZATION, snapshot.authorization());
   }
 
   private void applyApiKey(RequestTemplate template) {
@@ -82,39 +83,18 @@ public class AiPlatformRequestInterceptor implements RequestInterceptor {
     }
   }
 
-  private static String resolveRequestId() {
-    String inbound = headerFromCurrentRequest(INBOUND_REQUEST_ID_HEADER);
-    if (inbound != null) {
-      return inbound;
+  private static AiPlatformOutboundContext.Snapshot resolveSnapshot() {
+    AiPlatformOutboundContext.Snapshot bound = AiPlatformOutboundContext.get();
+    if (bound != null) {
+      return bound;
+    }
+    return AiPlatformOutboundContext.capture();
+  }
+
+  private static String resolveRequestId(AiPlatformOutboundContext.Snapshot snapshot) {
+    if (snapshot.requestId() != null && !snapshot.requestId().isBlank()) {
+      return snapshot.requestId();
     }
     return UUID.randomUUID().toString();
-  }
-
-  private static String resolveTraceId() {
-    return headerFromCurrentRequest(INBOUND_TRACE_ID_HEADER);
-  }
-
-  private static String resolveAuthorizationHeader() {
-    return headerFromCurrentRequest(HttpHeaders.AUTHORIZATION);
-  }
-
-  private static String headerFromCurrentRequest(String headerName) {
-    HttpServletRequest request = currentRequest();
-    if (request == null) {
-      return null;
-    }
-    String inbound = request.getHeader(headerName);
-    if (inbound == null || inbound.isBlank()) {
-      return null;
-    }
-    return inbound.trim();
-  }
-
-  private static HttpServletRequest currentRequest() {
-    RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-    if (attributes instanceof ServletRequestAttributes servletAttributes) {
-      return servletAttributes.getRequest();
-    }
-    return null;
   }
 }

@@ -13,7 +13,4 @@ import jakarta.validation.constraints.Size;
 @Schema(name = "EmailRecoveryRequest", description = "Account recovery email")
 public record EmailRecoveryRequest(
     @Schema(description = "Account email address", example = "user@example.com")
-        @NotBlank(message = "email must not be blank")
-        @Email(message = "email must be a valid email address")
-        @Size(max = 320, message = "email must not exceed 320 characters")
-        String email) {}
+        @NotBlank(message = "email must not be blank") @Email(message = "email must be a valid email address") @Size(max = 320, message = "email must not exceed 320 characters") String email) {}

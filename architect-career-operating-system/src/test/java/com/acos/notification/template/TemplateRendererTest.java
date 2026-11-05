@@ -13,11 +13,7 @@ class TemplateRendererTest {
   void shouldSubstituteValuesAndEscapeHtml() {
     MessageTemplate template =
         new MessageTemplate(
-            "PASSWORD_RESET",
-            NotificationChannel.EMAIL,
-            "Reset",
-            "Open {{resetUrl}}",
-            "{}");
+            "PASSWORD_RESET", NotificationChannel.EMAIL, "Reset", "Open {{resetUrl}}", "{}");
     template.setSubject("Reset {{resetUrl}}");
     template.setHtmlBody("<a href=\"{{resetUrl}}\">{{loginIdentifier}}</a>");
 

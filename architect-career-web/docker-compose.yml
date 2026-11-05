@@ -10,9 +10,9 @@ services:
         VITE_AI_PLATFORM_ENABLED: ${VITE_AI_PLATFORM_ENABLED:-true}
     image: acos-web
     ports:
-      - "${WEB_PORT:-5173}:80"
+      - "${WEB_PORT:-4000}:80"
     env_file:
       - .env
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    restart: unless-stopped
+    #restart: unless-stopped

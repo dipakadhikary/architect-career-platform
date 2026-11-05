@@ -19,9 +19,7 @@ import java.util.Objects;
     name = "password_reset_tokens",
     schema = "acos",
     uniqueConstraints =
-        @UniqueConstraint(
-            name = "uk_password_reset_tokens_token_hash",
-            columnNames = "token_hash"))
+        @UniqueConstraint(name = "uk_password_reset_tokens_token_hash", columnNames = "token_hash"))
 public class PasswordResetToken extends BaseEntity {
 
   /** Purpose stored for every row created by this feature. */

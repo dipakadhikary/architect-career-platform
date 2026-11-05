@@ -9,9 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  */
 @Schema(name = "RecoveryAcknowledgement", description = "Generic account recovery acknowledgement")
 public record RecoveryAcknowledgement(
-    @Schema(
-            description = "Generic recovery message",
-            example = RecoveryAcknowledgement.MESSAGE)
+    @Schema(description = "Generic recovery message", example = RecoveryAcknowledgement.MESSAGE)
         String message) {
 
   /** Message returned for every public recovery request. */

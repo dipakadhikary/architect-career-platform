@@ -87,8 +87,7 @@ public class NotificationDispatcher implements NotificationPort {
     }
     try {
       adapter.deliver(rendered);
-      LOG.info(
-          "Notification {} sent with provider {}", message.templateCode(), provider);
+      LOG.info("Notification {} sent with provider {}", message.templateCode(), provider);
     } catch (RuntimeException exception) {
       LOG.warn(
           "Notification provider {} failed for template {}: {}",

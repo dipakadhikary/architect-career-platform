@@ -61,7 +61,8 @@ public class MessageTemplateService {
   public MessageTemplateResponse create(SaveMessageTemplateRequest request) {
     if (request.code() == null || !CODE.matcher(request.code()).matches()) {
       throw new BusinessException(
-          ErrorCode.VALIDATION_FAILED, "code must contain uppercase letters, digits, or underscores");
+          ErrorCode.VALIDATION_FAILED,
+          "code must contain uppercase letters, digits, or underscores");
     }
     if (request.channel() == null) {
       throw new BusinessException(ErrorCode.VALIDATION_FAILED, "channel is required");
@@ -74,7 +75,11 @@ public class MessageTemplateService {
     parseSample(request.sampleData());
     MessageTemplate template =
         new MessageTemplate(
-            request.code(), request.channel(), request.name(), request.textBody(), request.sampleData());
+            request.code(),
+            request.channel(),
+            request.name(),
+            request.textBody(),
+            request.sampleData());
     apply(template, request);
     return MessageTemplateResponse.from(repository.save(template));
   }
@@ -130,7 +135,8 @@ public class MessageTemplateService {
     template.setEnabled(Boolean.TRUE.equals(request.enabled()));
   }
 
-  private static void validateBodies(NotificationChannel channel, SaveMessageTemplateRequest request) {
+  private static void validateBodies(
+      NotificationChannel channel, SaveMessageTemplateRequest request) {
     if (channel == NotificationChannel.EMAIL) {
       if (request.subject() == null || request.subject().isBlank()) {
         throw new BusinessException(ErrorCode.VALIDATION_FAILED, "subject is required for email");
@@ -147,7 +153,8 @@ public class MessageTemplateService {
           objectMapper.readValue(json, new TypeReference<LinkedHashMap<String, Object>>() {});
       Map<String, String> values = new LinkedHashMap<>();
       for (Map.Entry<String, Object> entry : raw.entrySet()) {
-        values.put(entry.getKey(), entry.getValue() == null ? "" : String.valueOf(entry.getValue()));
+        values.put(
+            entry.getKey(), entry.getValue() == null ? "" : String.valueOf(entry.getValue()));
       }
       return values;
     } catch (JsonProcessingException exception) {

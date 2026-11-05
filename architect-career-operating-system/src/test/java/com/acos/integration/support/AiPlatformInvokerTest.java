@@ -121,7 +121,7 @@ class AiPlatformInvokerTest {
   }
 
   @Test
-  void shouldKeepTheCallerRequestVisibleOnTheAsyncCall() {
+  void shouldKeepOutboundAuthVisibleOnTheAsyncCall() {
     AiPlatformProperties properties =
         new AiPlatformProperties(
             true,
@@ -153,17 +153,15 @@ class AiPlatformInvokerTest {
               "conversations",
               "/api/v1/ai/conversations",
               () -> {
-                if (!(RequestContextHolder.getRequestAttributes()
-                    instanceof ServletRequestAttributes servletAttributes)) {
-                  return "missing";
-                }
-                return servletAttributes.getRequest().getHeader(HttpHeaders.AUTHORIZATION);
+                AiPlatformOutboundContext.Snapshot snapshot = AiPlatformOutboundContext.get();
+                return snapshot == null ? "missing" : snapshot.authorization();
               },
               () -> "mocked");
 
       assertThat(seen).isEqualTo("Bearer token");
     } finally {
       RequestContextHolder.resetRequestAttributes();
+      AiPlatformOutboundContext.clear();
     }
   }
 }

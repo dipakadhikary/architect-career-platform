@@ -31,8 +31,6 @@ import org.slf4j.MDC;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
 /**
  * Executes AI Platform capability calls with feature toggle, Resilience4j decorators, metrics, and
@@ -133,12 +131,12 @@ public class AiPlatformInvoker {
 
   private <T> T invokeWithTimeLimit(Supplier<T> liveCall) {
     Duration timeout = timeLimiter.getTimeLimiterConfig().getTimeoutDuration();
-    RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
     SecurityContext securityContext = SecurityContextHolder.getContext();
     Map<String, String> mdc = MDC.getCopyOfContextMap();
+    AiPlatformOutboundContext.Snapshot outbound = AiPlatformOutboundContext.capture();
     try {
       return CompletableFuture.supplyAsync(
-              () -> callWithCapturedContext(liveCall, requestAttributes, securityContext, mdc))
+              () -> callWithCapturedContext(liveCall, securityContext, mdc, outbound))
           .orTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS)
           .join();
     } catch (CompletionException ex) {
@@ -147,26 +145,24 @@ public class AiPlatformInvoker {
   }
 
   /**
-   * Runs the Feign call on the timeout thread with the caller request still visible. {@code
-   * RequestContextHolder} and {@code SecurityContextHolder} are thread-local, so {@code
-   * supplyAsync} otherwise drops the bearer token.
+   * Runs the Feign call on the timeout thread with auth and outbound headers still available.
+   * Captures an immutable header snapshot instead of a live servlet request (Tomcat recycles those
+   * after the inbound request ends).
    */
   private static <T> T callWithCapturedContext(
       Supplier<T> liveCall,
-      RequestAttributes requestAttributes,
       SecurityContext securityContext,
-      Map<String, String> mdc) {
+      Map<String, String> mdc,
+      AiPlatformOutboundContext.Snapshot outbound) {
     try {
-      if (requestAttributes != null) {
-        RequestContextHolder.setRequestAttributes(requestAttributes);
-      }
       SecurityContextHolder.setContext(securityContext);
       if (mdc != null) {
         MDC.setContextMap(mdc);
       }
+      AiPlatformOutboundContext.set(outbound);
       return liveCall.get();
     } finally {
-      RequestContextHolder.resetRequestAttributes();
+      AiPlatformOutboundContext.clear();
       SecurityContextHolder.clearContext();
       MDC.clear();
     }

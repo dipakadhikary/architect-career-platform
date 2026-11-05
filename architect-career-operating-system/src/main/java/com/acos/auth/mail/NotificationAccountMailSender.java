@@ -35,9 +35,6 @@ public class NotificationAccountMailSender implements AccountMailSender {
   public void sendPasswordReset(String recipient, String resetUrl) {
     notifications.deliver(
         new NotificationMessage(
-            NotificationChannel.EMAIL,
-            "PASSWORD_RESET",
-            recipient,
-            Map.of("resetUrl", resetUrl)));
+            NotificationChannel.EMAIL, "PASSWORD_RESET", recipient, Map.of("resetUrl", resetUrl)));
   }
 }

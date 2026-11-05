@@ -55,7 +55,9 @@ public class MessageTemplateController {
    * @param request template fields
    * @return saved template
    */
-  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(summary = "Create a message template")
   public ResponseEntity<ApiResponse<MessageTemplateResponse>> create(
       @Valid @RequestBody SaveMessageTemplateRequest request) {

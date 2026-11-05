@@ -86,8 +86,7 @@ class AccountRecoveryServiceTest {
     when(userRepository.findByEmail("missing@acos.local")).thenReturn(Optional.empty());
 
     RecoveryAcknowledgement known = acknowledgementFor(EMAIL);
-    RecoveryAcknowledgement unknown =
-        service.requestPasswordReset("missing@acos.local");
+    RecoveryAcknowledgement unknown = service.requestPasswordReset("missing@acos.local");
 
     assertThat(known.message()).isEqualTo(unknown.message());
     verify(mailSender, never()).sendPasswordReset(eq("missing@acos.local"), any());
@@ -116,8 +115,7 @@ class AccountRecoveryServiceTest {
 
     String rawToken = resetUrl.getValue().substring(resetUrl.getValue().indexOf("token=") + 6);
     assertThat(saved.getValue().getTokenHash()).isNotEqualTo(rawToken);
-    assertThat(saved.getValue().getTokenHash())
-        .isEqualTo(AccountRecoveryService.sha256(rawToken));
+    assertThat(saved.getValue().getTokenHash()).isEqualTo(AccountRecoveryService.sha256(rawToken));
     assertThat(resetUrl.getValue()).startsWith("http://localhost:5173/reset-password?token=");
 
     when(tokenRepository.findByTokenHashForUpdate(saved.getValue().getTokenHash()))

@@ -36,8 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
  * Login-identifier recovery and password reset. Login uses the account email, so identifier
  * recovery emails that address and does not invent a separate username. Public methods return the
  * same acknowledgement for known and unknown emails. A newer reset request supersedes unused
- * tokens. Access tokens stay valid until they expire because they are stateless; refresh tokens
- * are revoked.
+ * tokens. Access tokens stay valid until they expire because they are stateless; refresh tokens are
+ * revoked.
  */
 @Service
 public class AccountRecoveryService {
@@ -148,9 +148,7 @@ public class AccountRecoveryService {
     if (found.isPresent() && found.get().isEnabled()) {
       User user = found.get();
       Instant now = Instant.now(clock);
-      tokenRepository
-          .findUnusedByUserId(user.getId())
-          .forEach(token -> token.supersede(now));
+      tokenRepository.findUnusedByUserId(user.getId()).forEach(token -> token.supersede(now));
       String rawToken = newRawToken();
       Instant expiresAt = now.plus(properties.tokenTtl());
       tokenRepository.save(new PasswordResetToken(user, sha256(rawToken), expiresAt));

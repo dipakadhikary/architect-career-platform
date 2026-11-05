@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import com.acos.auth.security.AcosUserDetails;
 import com.acos.common.logging.CorrelationIdFilter;
+import com.acos.integration.support.AiPlatformOutboundContext;
 import feign.RequestTemplate;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collection;
@@ -30,6 +31,7 @@ class AiPlatformRequestInterceptorTest {
     MDC.clear();
     SecurityContextHolder.clearContext();
     RequestContextHolder.resetRequestAttributes();
+    AiPlatformOutboundContext.clear();
   }
 
   @Test
@@ -55,19 +57,7 @@ class AiPlatformRequestInterceptorTest {
     when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer token");
     RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
 
-    AiPlatformProperties properties =
-        new AiPlatformProperties(
-            true,
-            "http://localhost:8090",
-            "api-secret",
-            java.time.Duration.ofSeconds(3),
-            java.time.Duration.ofSeconds(30),
-            "BASIC",
-            new AiPlatformProperties.CompressionProperties(true, true, 2048),
-            new AiPlatformProperties.ResilienceProperties("ai-platform"),
-            new AiPlatformProperties.RetryProperties(
-                true, 3, java.time.Duration.ofMillis(200), java.time.Duration.ofSeconds(2)));
-    AiPlatformRequestInterceptor interceptor = new AiPlatformRequestInterceptor(properties);
+    AiPlatformRequestInterceptor interceptor = new AiPlatformRequestInterceptor(properties());
     RequestTemplate template = new RequestTemplate();
 
     interceptor.apply(template);
@@ -83,5 +73,52 @@ class AiPlatformRequestInterceptorTest {
         .containsExactly(userId.toString());
     assertThat(headers.get(HttpHeaders.AUTHORIZATION)).containsExactly("Bearer token");
     assertThat(headers.get("X-API-Key")).containsExactly("api-secret");
+  }
+
+  @Test
+  void shouldUseOutboundSnapshotWithoutLiveRequest() {
+    AiPlatformOutboundContext.set(
+        new AiPlatformOutboundContext.Snapshot("Bearer snap", "snap-req", "snap-trace"));
+
+    AiPlatformRequestInterceptor interceptor = new AiPlatformRequestInterceptor(properties());
+    RequestTemplate template = new RequestTemplate();
+    interceptor.apply(template);
+
+    Map<String, Collection<String>> headers = template.headers();
+    assertThat(headers.get(HttpHeaders.AUTHORIZATION)).containsExactly("Bearer snap");
+    assertThat(headers.get(AiPlatformRequestInterceptor.HEADER_REQUEST_ID))
+        .containsExactly("snap-req");
+    assertThat(headers.get(AiPlatformRequestInterceptor.HEADER_TRACE_ID))
+        .containsExactly("snap-trace");
+    assertThat(headers.get("X-API-Key")).containsExactly("api-secret");
+  }
+
+  @Test
+  void shouldSurviveRecycledServletRequest() {
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    when(request.getHeader(HttpHeaders.AUTHORIZATION))
+        .thenThrow(new IllegalStateException("The request object has been recycled"));
+    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+
+    AiPlatformRequestInterceptor interceptor = new AiPlatformRequestInterceptor(properties());
+    RequestTemplate template = new RequestTemplate();
+    interceptor.apply(template);
+
+    assertThat(template.headers().get("X-API-Key")).containsExactly("api-secret");
+    assertThat(template.headers().get(AiPlatformRequestInterceptor.HEADER_REQUEST_ID)).isNotEmpty();
+  }
+
+  private static AiPlatformProperties properties() {
+    return new AiPlatformProperties(
+        true,
+        "http://localhost:8090",
+        "api-secret",
+        java.time.Duration.ofSeconds(3),
+        java.time.Duration.ofSeconds(30),
+        "BASIC",
+        new AiPlatformProperties.CompressionProperties(true, true, 2048),
+        new AiPlatformProperties.ResilienceProperties("ai-platform"),
+        new AiPlatformProperties.RetryProperties(
+            true, 3, java.time.Duration.ofMillis(200), java.time.Duration.ofSeconds(2)));
   }
 }

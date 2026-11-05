@@ -61,8 +61,7 @@ class NotificationDispatcherTest {
           .allSatisfy(
               event ->
                   assertThat(event.getLoggerName())
-                      .isNotEqualTo(
-                          "com.acos.notification.adapter.email.AwsSesEmailAdapter"));
+                      .isNotEqualTo("com.acos.notification.adapter.email.AwsSesEmailAdapter"));
     } finally {
       detach(logs);
     }
@@ -110,7 +109,10 @@ class NotificationDispatcherTest {
 
   private static NotificationMessage resetMessage() {
     return new NotificationMessage(
-        NotificationChannel.EMAIL, "PASSWORD_RESET", "ada@acos.local", Map.of("resetUrl", RESET_URL));
+        NotificationChannel.EMAIL,
+        "PASSWORD_RESET",
+        "ada@acos.local",
+        Map.of("resetUrl", RESET_URL));
   }
 
   private static ListAppender<ILoggingEvent> attachConsoleLog() {
